@@ -5,6 +5,7 @@ import pybullet as p
 import numpy as np
 from qibullet import SimulationManager
 from qibullet import PepperVirtual
+import time
 
 class PepperEnv(gym.Env):
     """docstring for PepperEnv"""
@@ -13,6 +14,8 @@ class PepperEnv(gym.Env):
         self.simulation_manager = SimulationManager()
         self.client = self.simulation_manager.launchSimulation(gui=True)
         self.robot = self.simulation_manager.spawnPepper(self.client, spawn_ground_plane=True)
+        time.sleep(1.0)
+
         self.joint_names = []
         self.lower_limits = []
         self.upper_limits = []
@@ -37,7 +40,7 @@ class PepperEnv(gym.Env):
 
         # observation = [jointStates[joint][0] for joint in self.joints]
         # return observation, reward, done, info
-        return None, None, None, None
+        return None, reward, done, info
 
     def reset(self):
         # p.resetSimulation()
@@ -60,7 +63,27 @@ class PepperEnv(gym.Env):
         pass
 
     def render(self, mode='human'):
-        pass
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition=[0.5,0,0.5],
+                                                          distance=.7,
+                                                          yaw=90,
+                                                          pitch=0,
+                                                          roll=0,
+                                                          upAxisIndex=2)
+        proj_matrix = p.computeProjectionMatrixFOV(fov=60,
+                                                   aspect=float(960)/720,
+                                                   nearVal=0.1,
+                                                   farVal=100.0)
+        (_, _, px, _, _) = p.getCameraImage(width=960,
+                                            height=720,
+                                            viewMatrix=view_matrix,
+                                            projectionMatrix=proj_matrix,
+                                            renderer=p.ER_BULLET_HARDWARE_OPENGL)
+
+        rgb_array = np.array(px, dtype=np.uint8)
+        rgb_array = np.reshape(rgb_array, (720,960,4))
+
+        rgb_array = rgb_array[:, :, :3]
+        return rgb_array
 
     def close(self):
         p.disconnect()
