@@ -7,7 +7,7 @@ gym env for humanoid robots including Pepper &amp; NAO with pybullet
 
 ```bash
 $ git clone git@github.com:0aqz0/humanoid-gym.git
-$ cd yumi-gym
+$ cd humanoid-gym
 $ pip install -e .
 ```
 
