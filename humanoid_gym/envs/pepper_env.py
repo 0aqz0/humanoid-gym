@@ -13,6 +13,7 @@ class PepperEnv(gym.Env):
         super(PepperEnv, self).__init__()
         self.simulation_manager = SimulationManager()
         self.client = self.simulation_manager.launchSimulation(gui=True)
+        self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnPepper(self.client, spawn_ground_plane=True)
         time.sleep(1.0)
 
@@ -26,41 +27,36 @@ class PepperEnv(gym.Env):
                 self.lower_limits.append(joint.getLowerLimit())
                 self.upper_limits.append(joint.getUpperLimit())
                 self.init_angles.append(self.robot.getAnglesPosition(name))
-        self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
-        # self.observation_space = spaces.Box(np.array([-1]*len(self.joints)), np.array([1]*len(self.joints)))
+        self.action_space = spaces.Box(np.array([-1]*3 + self.lower_limits), np.array([1]*3 + self.upper_limits))
+        self.observation_space = spaces.Box(np.array([-1]*len(self.joint_names)), np.array([1]*len(self.joint_names)))
 
     def step(self, actions):
-        # set action
-        self.robot.setAngles(self.joint_names, actions, 1.0)
+        if isinstance(actions, np.ndarray):
+            actions = actions.tolist()
+        # set robot move speed
+        self.robot.move(actions[0], actions[1], actions[2])
+        # set joint angles
+        self.robot.setAngles(self.joint_names, actions[3:], 1.0)
+
+        # get observations
+        observation = {
+            'position': self.robot.getPosition(),
+            'anglesPosition': self.robot.getAnglesPosition(self.joint_names),
+            'anglesVelocity': self.robot.getAnglesVelocity(self.joint_names),
+            # TODO: add more observations
+            }
 
         # TODO: design your reward
         reward = 0
         done = False
         info = {}
 
-        # observation = [jointStates[joint][0] for joint in self.joints]
-        # return observation, reward, done, info
-        return None, reward, done, info
+        return observation, reward, done, info
 
     def reset(self):
-        # p.resetSimulation()
-        # self.step_counter = 0
-        # self.pepperUid = p.loadURDF(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-        #     "assets/pepper.urdf"), useFixedBase=True, flags=p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS)
-        # p.setGravity(0,0,-10)
-        # p.setPhysicsEngineParameter(numSolverIterations=150)
-        # p.setTimeStep(1./240.)
-        # self.joint2Index = {} # jointIndex map to jointName
-        # for i in range(p.getNumJoints(self.pepperUid)):
-        #     self.joint2Index[p.getJointInfo(self.pepperUid, i)[1].decode('utf-8')] = i
-        # self.jointColor = {} # jointName map to jointColor
-        # for data in p.getVisualShapeData(self.pepperUid):
-        #     self.jointColor[p.getJointInfo(self.pepperUid, data[1])[1].decode('utf-8')] = data[7]
-        # # recover color
-        # for joint, index in self.joint2Index.items():
-        #     if joint in self.jointColor and joint != 'world_joint':
-        #         p.changeVisualShape(self.pepperUid, index, rgbaColor=self.jointColor[joint])
-        pass
+        self.simulation_manager.removePepper(self.robot)
+        self.robot = self.simulation_manager.spawnPepper(self.client, spawn_ground_plane=True)
+        time.sleep(1.0)
 
     def render(self, mode='human'):
         view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition=[0.5,0,0.5],
