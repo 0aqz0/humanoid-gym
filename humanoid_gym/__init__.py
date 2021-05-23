@@ -12,6 +12,12 @@ register(
     entry_point='humanoid_gym.envs:NaoEnv',
 )
 
+# Romeo
+register(
+    id='romeo-v0',
+    entry_point='humanoid_gym.envs:RomeoEnv',
+)
+
 # Dancer
 register(
     id='dancer-v0',
