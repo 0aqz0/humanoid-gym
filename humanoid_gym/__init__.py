@@ -11,3 +11,9 @@ register(
     id='nao-v0',
     entry_point='humanoid_gym.envs:NaoEnv',
 )
+
+# Dancer
+register(
+    id='dancer-v0',
+    entry_point='humanoid_gym.envs:DancerEnv',
+)
