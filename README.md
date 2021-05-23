@@ -1,7 +1,7 @@
 # humanoid-gym
-gym env for humanoid robots including Pepper &amp; NAO with pybullet
+gym env for humanoid robots including Pepper &amp; NAO & Romeo & Dancer with pybullet
 
-<img src='./images/pepper.png' height='280'><img src='./images/nao.png' height='280'>
+<img src='./images/pepper.png' height='180'><img src='./images/nao.png' height='180'> <img src='./images/romeo.png' height='180'><img src='./images/dancer.png' height='180'>
 
 ## Installation
 
