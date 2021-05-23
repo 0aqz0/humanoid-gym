@@ -1,0 +1,2005 @@
+<?xml version = "1.0" encoding="utf-8"?>
+<robot
+  name="dancer_urdf_model">
+<!-- root link -->
+  <!-- <link 
+    name="world_link">
+  </link>
+  <joint
+    name="joint_world" 
+    type="continuous">
+    <parent 
+      link="world_link"/>
+    <child 
+      link="body_chest"/>
+    <axis
+      xyz="0 0 1" />
+  </joint> -->
+<!-- body -->
+  <link
+    name="body_chest">
+    <inertial>
+      <!-- <origin
+        xyz="-0.39529 -0.25795 -0.0041722"
+        rpy="0 0 0" />
+      <mass
+        value="0.66907" /> -->
+      <!-- <inertia
+        ixx="0.0010789"
+        ixy="-2.1492E-06"
+        ixz="-1.1578E-06"
+        iyy="0.0012519"
+        iyz="0.00017837"
+        izz="0.0014192" /> -->
+      <!-- <inertia
+        ixx="0.001448202015"
+        ixy="0"
+        ixz="0"
+        iyy="0.000913481271"
+        iyz="0"
+        izz="0.001648722294" /> -->
+      <origin
+        xyz="-0.616313494681162 -0.215606025502619 0.218328112191186"
+        rpy="0 0 0" />
+      <!-- <mass
+        value="0.882484739618511" /> -->
+      <mass
+        value="0.088248473961851" />
+      <inertia
+        ixx="0.00046279697033304"
+        ixy="-1.29208732985506E-06"
+        ixz="3.13480143442607E-08"
+        iyy="0.000569939112981271"
+        iyz="-3.23018574616647E-06"
+        izz="0.000627101614709985" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_chest.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_chest.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="body_head">
+    <inertial>
+      <!-- <origin
+        xyz="-0.000351851554432403 -0.0159432418124996 -6.20136945961303E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.0560380421735799" /> -->
+      <!-- <inertia
+        ixx="6.80542660516315E-06"
+        ixy="2.52790190769969E-07"
+        ixz="2.16353945279601E-13"
+        iyy="1.50295053154063E-06"
+        iyz="1.49161003758429E-12"
+        izz="8.30837713670273E-06" /> -->
+      <!-- <inertia
+        ixx="1.7946036e-05"
+        ixy="0"
+        ixz="0"
+        iyy="1.471574952e-05"
+        iyz="0"
+        izz="1.471574952e-05" /> -->
+      <origin
+        xyz="0.000414526290536621 5.46344108842689E-09 0.032686211294751"
+        rpy="0 0 0" />
+      <mass
+        value="0.05496" />
+      <inertia
+        ixx="1.15560765805171E-05"
+        ixy="-6.37698448820114E-12"
+        ixz="8.72982482484381E-08"
+        iyy="1.38245262746023E-05"
+        iyz="-6.32904633697489E-12"
+        izz="1.00312989309914E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_head.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.90983 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_head.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_head"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.39482 -0.32209 -0.014452"
+      rpy="2.6872 -0.050522 -3.1169" /> -->
+    <origin
+      xyz="-0.615612428513425 -0.285967486211966 0.20056776073696"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_head" />
+    <!-- <axis
+      xyz="0 1 0" /> -->
+    <axis
+      xyz="0.0149998112887428 0 0.999887496502132" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_head2">
+    <inertial>
+      <!-- <origin
+        xyz="-0.020399 -0.025987 -0.047171"
+        rpy="0 0 0" />
+      <mass
+        value="0.067365" /> -->
+      <!-- <inertia
+        ixx="2.0873E-05"
+        ixy="2.2756E-10"
+        ixz="9.0633E-10"
+        iyy="6.1663E-06"
+        iyz="-4.8418E-06"
+        izz="1.4707E-05" /> -->
+      <!-- <inertia
+        ixx="2.4255387e-05"
+        ixy="0"
+        ixz="0"
+        iyy="3.3584382e-05"
+        iyz="0"
+        izz="2.4255387e-05" /> -->
+      <origin
+        xyz="-0.0496692849997094 -0.00262565458459788 0.0523169063751714"
+        rpy="0 0 0" />
+      <mass
+        value="0.0803703275300652" />
+      <inertia
+        ixx="3.64947790343948E-05"
+        ixy="3.45134666590487E-08"
+        ixz="-2.25159079858521E-07"
+        iyy="4.52013276356543E-05"
+        iyz="3.25342165484819E-06"
+        izz="2.12016157986899E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_head2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_head2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_head2"
+    type="continuous">
+    <!-- <origin
+      xyz="0.02015 -0.031182 0"
+      rpy="-1.1164 0 0" /> -->
+    <origin
+      xyz="0.0507513535336471 0 0.0497102139820205"
+      rpy="0 0 0" />
+    <parent
+      link="body_head" />
+    <child
+      link="body_head2" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="0.999887496502133 0 -0.0149998112887384" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="arm_left">
+    <inertial>
+      <!-- <origin
+        xyz="0.00185814795587239 -0.0815728051955473 0.0294005743652034"
+        rpy="0 0 0" />
+      <mass
+        value="0.142976459032186" /> -->
+      <!-- <inertia
+        ixx="0.000249420588469075"
+        ixy="7.32525652321763E-06"
+        ixz="7.10318603096419E-06"
+        iyy="5.00248806790026E-05"
+        iyz="-1.63332458191431E-05"
+        izz="0.000260415991235315" /> -->
+      <!-- <inertia
+        ixx="0.000347545773"
+        ixy="0"
+        ixz="0"
+        iyy="8.5696218e-05"
+        iyz="0"
+        izz="0.000347545773" /> -->
+      <origin
+        xyz="-0.0330847414453067 0.00188579224537025 -0.0802758177228025"
+        rpy="0 0 0" />
+      <mass
+        value="0.140880460038681" />
+      <inertia
+        ixx="0.000120172742185719"
+        ixy="-1.59278019073766E-07"
+        ixz="5.25020978487963E-06"
+        iyy="0.000123100393049993"
+        iyz="2.41797266022087E-09"
+        izz="2.05665605944976E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/arm_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/arm_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_left"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.46902 -0.2921 0.00017561"
+      rpy="-1.5708 1.09187 1.5708" /> -->
+      <!--rpy="-1.5708 -0.59813 1.5708" put 1.69 into p-->
+    <origin
+      xyz="-0.480637621395787 -0.270857071736484 0.200567760736966"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="arm_left" />
+    <!-- <axis
+      xyz="0 0 1" /> -->
+    <axis
+      xyz="0.999887496502133 0 -0.0149998112887317" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="hand_left">
+    <inertial>
+      <!-- <origin
+        xyz="-0.00150000000000006 0.0513998176588075 -0.0471166731147821"
+        rpy="0 0 0" />
+      <mass
+        value="0.021948273112724" /> -->
+      <!-- <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" /> -->
+      <!-- <inertia
+        ixx="7.5982608e-05"
+        ixy="0"
+        ixz="0"
+        iyy="3.1050585e-06"
+        iyz="0"
+        izz="7.32428505e-05" /> -->
+      <origin
+        xyz="-0.00479785812890254 -7.54951656745106E-15 -0.0635843345452896"
+        rpy="0 0 0" />
+      <mass
+        value="0.0240442691962686" />
+      <inertia
+        ixx="5.18779346882441E-05"
+        ixy="3.23558452235391E-20"
+        ixz="-7.49042003282551E-07"
+        iyy="4.9981652173878E-05"
+        iyz="1.76589230995525E-18"
+        izz="1.9581507829635E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/hand_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/hand_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_hand_left"
+    type="continuous">
+    <!-- <origin
+      xyz="0 -0.136 0.05255"
+      rpy="-2.36187 -1.5708 0" /> -->
+      <!--rpy="0.59813 -1.5708 0" put -2.96 into r-->
+    <origin
+      xyz="-0.00831303371965708 0 -0.135890594230151"
+      rpy="0 0 0" />
+    <parent
+      link="arm_left" />
+    <child
+      link="hand_left" />
+    <!-- <axis
+      xyz="1 0 0" /> -->
+    <axis
+      xyz="0.999887496502131 0 -0.0149998112888278" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="arm_right">
+    <inertial>
+      <!-- <origin
+        xyz="0.00187545595097149 -0.0810657497418857 0.0317817660201292"
+        rpy="0 0 0" />
+      <mass
+        value="0.141656759847187" /> -->
+      <!-- <inertia
+        ixx="0.000244964545549609"
+        ixy="7.19058779167484E-06"
+        ixz="-7.15162953626525E-06"
+        iyy="4.95100328023302E-05"
+        iyz="1.49143124694347E-05"
+        izz="0.000256465619549068" /> -->
+      <!-- <inertia
+        ixx="0.000347545773"
+        ixy="0"
+        ixz="0"
+        iyy="8.5696218e-05"
+        iyz="0"
+        izz="0.000347545773" /> -->
+      <origin
+        xyz="-0.030307333521772 0.00188579156361365 -0.0803174776823527"
+        rpy="0 0 0" />
+      <mass
+        value="0.140880462107965" />
+      <inertia
+        ixx="0.000119768286367428"
+        ixy="1.59272773011466E-07"
+        ixz="-8.22722138877276E-06"
+        iyy="0.000123100386580979"
+        iyz="-2.37793470819043E-09"
+        izz="2.09710170767841E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/arm_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89875 0.91729 0.92982 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/arm_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_right"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.25942 -0.2921 0.00017561"
+      rpy="-1.5708 1.0973 1.5708" /> -->
+      <!--rpy="-1.5708 1.0373 1.5708" put 0.06 into p-->
+    <origin
+      xyz="-0.690210517946081 -0.274000979336581 0.20056776073696"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="arm_right" />
+    <!-- <axis
+      xyz="0 0 1" /> -->
+    <axis
+      xyz="0.999887496502132 0 -0.0149998112887528" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="hand_right">
+    <inertial>
+      <!-- <origin
+        xyz="-0.00150000000000061 -0.0550818675496146 -0.0427540642279834"
+        rpy="0 0 0" />
+      <mass
+        value="0.021948273112724" /> -->
+      <!-- <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" /> -->
+      <!-- <inertia
+        ixx="7.5982608e-05"
+        ixy="0"
+        ixz="0"
+        iyy="3.1050585e-06"
+        iyz="0"
+        izz="7.32428505e-05" /> -->
+      <origin
+        xyz="-0.00469304011310134 1.65145674912992E-14 -0.0672826860647183"
+        rpy="0 0 0" />
+      <mass
+        value="0.0227245679584811" />
+      <inertia
+        ixx="5.18047025522023E-05"
+        ixy="3.31301055921671E-19"
+        ixz="-7.48520829858133E-07"
+        iyy="4.99429963653671E-05"
+        iyz="2.1798867900886E-17"
+        izz="1.9194835923031E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/hand_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/hand_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_hand_right"
+    type="continuous">
+    <!-- <origin
+      xyz="0 -0.136 0.00845"
+      rpy="-0.6557 1.5708 0" /> -->
+      <!--rpy="2.1043 1.5708 0" put -2.76 into r-->
+    <origin
+      xyz="-0.0493202167072464 0 -0.135275425015181"
+      rpy="0 0 0" />
+    <parent
+      link="arm_right" />
+    <child
+      link="hand_right" />
+    <!-- <axis
+      xyz="1 0 0" /> -->
+    <axis
+      xyz="0.999887496502134 0 -0.0149998112886474" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <!-- <link
+    name="body_hip">
+    <inertial>
+      <origin
+        xyz="0.000157245394557526 0.0183365350270815 0.0512514015755213"
+        rpy="0 0 0" />
+      <mass
+        value="0.220741166410594" /> -->
+      <!-- <inertia
+        ixx="4.99532905906753E-05"
+        ixy="-8.8425558025927E-07"
+        ixz="4.63751185231834E-07"
+        iyy="0.000349635027414184"
+        iyz="-8.11153973374568E-06"
+        izz="0.000393338670951652" /> -->
+      <!-- <inertia
+        ixx="4.59415125e-05"
+        ixy="0"
+        ixz="0"
+        iyy="0.00014701284"
+        iyz="0"
+        izz="0.0001341492165" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip.STL" />
+      </geometry>
+    </collision>
+  </link> -->
+  <!-- <joint
+    name="joint_body_hip"
+    type="continuous">
+    <origin
+      xyz="-0.39482 -0.11668 0.01337"
+      rpy="-0.45379 0 -3.1416" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_hip" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint> -->
+  <link
+    name="body_hip_left">
+    <inertial>
+      <!-- <origin
+        xyz="0.020727573256466 0.00401171130451616 -0.000185064805642399"
+        rpy="0 0 0" />
+      <mass
+        value="0.0513468076618724" /> -->
+      <!-- <inertia
+        ixx="5.53880436537222E-07"
+        ixy="9.93497455590853E-07"
+        ixz="-4.44878455701968E-08"
+        iyy="5.30575756787479E-06"
+        iyz="-2.18432738949885E-09"
+        izz="5.33896357399273E-06" /> -->
+      <!-- <inertia
+        ixx="3.419244e-05"
+        ixy="0"
+        ixz="0"
+        iyy="1.3676976e-05"
+        iyz="0"
+        izz="3.419244e-05" /> -->
+      <origin
+        xyz="0.000945067783106102 -0.00416671476409239 0.0629976565509531"
+        rpy="0 0 0" />
+      <mass
+        value="0.0606904859381705" />
+      <inertia
+        ixx="3.05254383377384E-05"
+        ixy="1.39836208317736E-09"
+        ixz="-1.28861971999565E-09"
+        iyy="1.17463917453059E-05"
+        iyz="9.419363591995E-08"
+        izz="3.04400866114059E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.77694 0.75639 0.73784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip_left"
+    type="continuous">
+    <!-- <origin
+      xyz="0.045 -0.0122 0.065"
+      rpy="1.6008 0 -1.5708" /> -->
+      <!--rpy="1.5708 0 -1.5708" put 0.03 into r-->
+    <origin
+      xyz="-0.574767957608413 -0.00862238094696859 0.200607760736968"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_hip_left" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="0.0149998112887428 0 0.999887496502133" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip2_left">
+    <inertial>
+      <!-- <origin
+        xyz="-0.05214771499803 -0.0126151296156827 0.000799339990500914"
+        rpy="0 0 0" />
+      <mass
+        value="0.178226116015845" /> -->
+      <!-- <inertia
+        ixx="1.31915893268092E-05"
+        ixy="1.10728342854583E-05"
+        ixz="-3.64501965445685E-07"
+        iyy="0.00014636948190844"
+        iyz="4.48899648606397E-07"
+        izz="0.000142732199426348" /> -->
+      <!-- <inertia
+        ixx="4.7477808e-05"
+        ixy="0"
+        ixz="0"
+        iyy="0.00011869452"
+        iyz="0"
+        izz="0.00011869452" /> -->
+      <origin
+        xyz="-2.28435030289464E-05 -0.0309433797840232 -0.0141527835068525"
+        rpy="0 0 0" />
+      <mass
+        value="0.159177872474359" />
+      <inertia
+        ixx="5.36133737563341E-05"
+        ixy="-5.96397221650733E-21"
+        ixz="2.02453010024122E-07"
+        iyy="5.43148029796541E-05"
+        iyz="-2.14841517470244E-07"
+        izz="3.27173793791275E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip2_left"
+    type="continuous">
+    <!-- <origin
+      xyz="0.0493 0.033966 -0.0015267"
+      rpy="3.1698 0.044917 1.5708" /> -->
+      <!--rpy="3.0498 0.044917 1.5708" put -0.14 into -r-->
+    <origin
+      xyz="0.000579999589308322 0 0.038662775562355"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip_left" />
+    <child
+      link="body_hip2_left" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg_left">
+    <inertial>
+      <!-- <origin
+        xyz="-0.0239762815919513 0.0733271184441349 -0.0492320368464383"
+        rpy="0 0 0" />
+      <mass
+        value="0.117898503490257" /> -->
+      <!-- <inertia
+        ixx="8.19638344105388E-05"
+        ixy="4.15735753169954E-07"
+        ixz="-3.08942552253119E-07"
+        iyy="5.79765950100758E-05"
+        iyz="-3.98771822899511E-05"
+        izz="7.68071497117597E-05" /> -->
+      <!-- <inertia
+        ixx="0.000427905333"
+        ixy="0"
+        ixz="0"
+        iyy="7.0663266e-05"
+        iyz="0"
+        izz="0.000427905333" /> -->
+      <origin
+        xyz="-0.0116252060739156 0.00120888924666671 -0.0786191617254281"
+        rpy="0 0 0" />
+      <mass
+        value="0.11789850487658" />
+      <inertia
+        ixx="7.43113045276454E-05"
+        ixy="-2.26804392296794E-12"
+        ixz="-2.02457513575927E-07"
+        iyy="7.40607882060034E-05"
+        iyz="5.48826459972443E-06"
+        izz="2.08105251807748E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg_left"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.034 0.0013682 0.024061"
+      rpy="-1.0064 -1.514 1.5708" /> -->
+      <!--rpy="-2.6864 -1.514 1.5708" /> put -1.68 into r-->
+    <origin
+      xyz="0.0117489242262162 -0.0103000000000123 0"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip2_left" />
+    <child
+      link="leg_left" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg2_left">
+    <inertial>
+      <!-- <origin
+        xyz="-0.0235000000000001 0.0561541813174893 0.0270927391440708"
+        rpy="0 0 0" />
+      <mass
+        value="0.0278306854029525" /> -->
+      <!-- <inertia
+        ixx="2.00646228342237E-06"
+        ixy="1.74773182168739E-20"
+        ixz="-1.11173074327127E-21"
+        iyy="1.45608552327633E-05"
+        iyz="-5.34162892350515E-08"
+        izz="1.65644713873633E-05" /> -->
+      <!-- <inertia
+        ixx="0.000101014551"
+        ixy="0"
+        ixz="0"
+        iyy="1.6681302e-05"
+        iyz="0"
+        izz="0.000101014551" /> -->
+      <origin
+        xyz="-0.0620521617566315 0.0116999543672374 -0.0623319986115592"
+        rpy="0 0 0" />
+      <mass
+        value="0.0468789275178147" />
+      <inertia
+        ixx="4.61873372876244E-05"
+        ixy="4.73015151731043E-12"
+        ixz="-7.49486610184811E-12"
+        iyy="4.39066187165455E-05"
+        iyz="6.93235154853255E-06"
+        izz="4.78336189725116E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.90927 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg2_left"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.0006 0.098703 -0.068248"
+      rpy="-1.05 0 0" /> -->
+      <!--rpy="0 0 0" put 1.05 into r-->
+    <origin
+      xyz="0.0499806689582331 0 -0.120000000000317"
+      rpy="0 0 0" />
+    <parent
+      link="leg_left" />
+    <child
+      link="leg2_left" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot1_left">
+    <inertial>
+      <!-- <origin
+        xyz="-0.0240177949022405 -0.00952681182363596 -0.0183477774983369"
+        rpy="0 0 0" />
+      <mass
+        value="0.177450614870689" /> -->
+      <!-- <inertia
+        ixx="0.000125001022397629"
+        ixy="1.93552642868024E-07"
+        ixz="2.77490556714786E-07"
+        iyy="0.000127562548065075"
+        iyz="-1.29579673929925E-05"
+        izz="1.38118491262305E-05" /> -->
+      <!-- <inertia
+        ixx="0.0001181817"
+        ixy="0"
+        ixz="0"
+        iyy="0.000147727125"
+        iyz="0"
+        izz="7.6818105e-05" /> -->
+      <origin
+        xyz="-0.0530989934891989 -0.0175901755307813 0.0141878018170923"
+        rpy="0 0 0" />
+      <mass
+        value="0.158402372500407" />
+      <inertia
+        ixx="5.3375881657705E-05"
+        ixy="-3.54984559877132E-21"
+        ixz="-2.02463791844223E-07"
+        iyy="5.42458702551359E-05"
+        iyz="-1.9007867850504E-07"
+        izz="3.2547948310614E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot1_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot1_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot1_left"
+    type="continuous">
+    <!-- <origin
+      xyz="0.0006 0.11852 0.05341"
+      rpy="0.41 0 0" /> -->
+      <!--rpy="0 0 0" put -0.19 into -r-->
+    <origin
+      xyz="-0.0102535550345806 0.0220306418254577 -0.128119673824045"
+      rpy="0 0 0" />
+    <parent
+      link="leg2_left" />
+    <child
+      link="foot1_left" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot2_left">
+    <inertial>
+      <!-- <origin
+        xyz="0.00686471247682141 -0.0384681270411728 0.0369568564087829"
+        rpy="0 0 0" />
+      <mass
+        value="0.13465253780049" /> -->
+      <!-- <inertia
+        ixx="0.000175278373031919"
+        ixy="-2.54500802762497E-06"
+        ixz="-1.92782216931443E-06"
+        iyy="0.00022389365941899"
+        iyz="3.30376832465257E-06"
+        izz="6.63305590940042E-05" /> -->
+      <!-- <inertia
+        ixx="0.000919188225"
+        ixy="0"
+        ixz="0"
+        iyy="0.00132721812"
+        iyz="0"
+        izz="0.000488739105" /> -->
+      <!-- <origin
+        xyz="-0.582199195289208 0.211126147361554 -0.236761477035537"
+        rpy="0 0 0" /> -->
+      <origin
+        xyz="-0.00641123727010962 0.0305388205728046 -0.0359269597204822"
+        rpy="0 0 0" />
+      <mass
+        value="0.14417666873715" />
+      <inertia
+        ixx="0.000141494770501712"
+        ixy="1.84880295385669E-12"
+        ixz="-9.12447801802343E-12"
+        iyy="5.06452586250787E-05"
+        iyz="-3.33958900997396E-07"
+        izz="0.000183701625816014" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.90927 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot2_left"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.0241 -0.0065502 0.035907"
+      rpy="-2.9765 -0.0132 0.03369" /> -->
+      <!--rpy="-2.9765 -0.0732 0.41369" put 0.41 into p-->
+    <origin
+      xyz="-0.0530760381498626 -0.031751075773801 0"
+      rpy="0 0 0" />
+    <parent
+      link="foot1_left" />
+    <child
+      link="foot2_left" />
+    <!-- <axis
+      xyz="0 0 1" /> -->
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip_right">
+    <inertial>
+      <!-- <origin
+        xyz="0.00360506662341747 0.00176962459685462 0.0179275732564661"
+        rpy="0 0 0" />
+      <mass
+        value="0.0513468076618724" /> -->
+      <!-- <inertia
+        ixx="5.31161382984344E-06"
+        ixy="1.28428405213891E-08"
+        ixz="8.92145319107081E-07"
+        iyy="5.33310731202415E-06"
+        iyz="4.39423590928376E-07"
+        izz="5.5388043653725E-07" /> -->
+      <!-- <inertia
+        ixx="3.419244e-05"
+        ixy="0"
+        ixz="0"
+        iyy="1.3676976e-05"
+        iyz="0"
+        izz="3.419244e-05" /> -->
+      <origin
+        xyz="0.000907183709312309 0.00424992243988156 0.0604701704492792"
+        rpy="0 0 0" />
+      <mass
+        value="0.0606904859337575" />
+      <inertia
+        ixx="3.05254258936741E-05"
+        ixy="-1.42567647782977E-09"
+        ixz="-1.28614118753563E-09"
+        iyy="1.17463917445773E-05"
+        iyz="-9.41881356880309E-08"
+        izz="3.04400990563153E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip_right"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.045 -0.015 0.065"
+      rpy="1.5708 -1.1184 0" /> -->
+      <!--rpy="1.5708 -1.0684 0" put 0.05 into p-->
+    <origin
+      xyz="-0.664719916505049 -0.0124998306201608 0.20060776073697"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_hip_right" />
+    <!-- <axis
+      xyz="0 0 1" /> -->
+    <axis
+      xyz="0.0149998112887428 0 0.999887496502133" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip2_right">
+    <inertial>
+      <!-- <origin
+        xyz="-0.05274771645541 -0.00922434933235092 0.00864247622548692"
+        rpy="0 0 0" />
+      <mass
+        value="0.178226118022815" /> -->
+      <!-- <inertia
+        ixx="1.31914879715377E-05"
+        ixy="8.31106180167271E-06"
+        ixz="-7.32576193940501E-06"
+        iyy="0.000144456519354766"
+        iyz="1.87090627339956E-06"
+        izz="0.000144645044815494" /> -->
+      <!-- <inertia
+        ixx="4.7477808e-05"
+        ixy="0"
+        ixz="0"
+        iyy="0.00011869452"
+        iyz="0"
+        izz="0.00011869452" /> -->
+      <origin
+        xyz="-2.2843503021619E-05 -0.020643379783998 -0.0141527835068197"
+        rpy="0 0 0" />
+      <mass
+        value="0.159177872474359" />
+      <inertia
+        ixx="5.3613373756334E-05"
+        ixy="1.1123428892363E-20"
+        ixz="2.0245301002463E-07"
+        iyy="5.43148029796541E-05"
+        iyz="-2.14841517470345E-07"
+        izz="3.27173793791274E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_hip2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip2_right"
+    type="continuous">
+    <!-- <origin
+      xyz="0.031042 0.015283 0.0465"
+      rpy="2.299 0 0.4575" /> -->
+      <!--rpy="1.479 0 0.4575" put -0.83 into -r-->
+    <origin
+      xyz="0.000542083800765036 0 0.0361353089051728"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip_right" />
+    <child
+      link="body_hip2_right" />
+    <!-- <axis
+      xyz="-1 0 0" /> -->
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg_right">
+    <inertial>
+      <!-- <origin
+        xyz="-0.0282237184526358 -0.0161687157017971 -0.0868287422428667"
+        rpy="0 0 0" />
+      <mass
+        value="0.117898502766572" /> -->
+      <!-- <inertia
+        ixx="8.19637542489574E-05"
+        ixy="7.03755713098893E-08"
+        ixz="5.13184590718679E-07"
+        iyy="0.000107449613122845"
+        iyz="8.61440649609276E-06"
+        izz="2.73340514340446E-05" /> -->
+      <!-- <inertia
+        ixx="0.000427905333"
+        ixy="0"
+        ixz="0"
+        iyy="0.000427905333"
+        iyz="0"
+        izz="7.0663266e-05" /> -->
+      <origin
+        xyz="0.0128726423785163 0.00120889814603442 -0.0786191832104045"
+        rpy="0 0 0" />
+      <mass
+        value="0.11789850487658" />
+      <inertia
+        ixx="7.43113045276455E-05"
+        ixy="3.27778988376902E-13"
+        ixz="-2.02463780446535E-07"
+        iyy="7.40608022516867E-05"
+        iyz="5.48825055404415E-06"
+        izz="2.08105111350916E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg_right"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.0346 -0.019079 -0.02063"
+      rpy="0.20449 0.82443 -1.5708" /> -->
+      <!--rpy="-0.34551 0.82443 -1.5708" put 0.55 into r-->
+    <origin
+      xyz="-0.0127489242262093 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip2_right" />
+    <child
+      link="leg_right" />
+    <!-- <axis
+      xyz="1 0 0" /> -->
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg2_right">
+    <inertial>
+      <!-- <origin
+        xyz="-0.0264999999999997 -0.0557112176708658 -0.0279922992874042"
+        rpy="0 0 0" />
+      <mass
+        value="0.0278306854029525" /> -->
+      <!-- <inertia
+        ixx="2.00646228342255E-06"
+        ixy="5.43874561476066E-19"
+        ixz="3.11390487234362E-19"
+        iyy="1.58713263120878E-05"
+        iyz="9.54567899565275E-07"
+        izz="1.52540003080386E-05" /> -->
+      <!-- <inertia
+        ixx="0.000101014551"
+        ixy="0"
+        ixz="0"
+        iyy="1.6681302e-05"
+        iyz="0"
+        izz="0.000101014551" /> -->
+      <origin
+        xyz="-0.0378134938167345 0.00668575513211081 -0.0630671561255923"
+        rpy="0 0 0" />
+      <mass
+        value="0.0468789275178147" />
+      <inertia
+        ixx="4.61873372876243E-05"
+        ixy="7.36762713958321E-12"
+        ixz="-6.14345132550088E-12"
+        iyy="4.47607005070523E-05"
+        iyz="3.73014655151864E-06"
+        izz="3.92928010674436E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/leg2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg2_right"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.0016 -0.020351 -0.11826"
+      rpy="0.94 0 0" /> -->
+      <!--rpy="0 0 0" put 0.79 into r-->
+    <origin
+      xyz="0.0513478626051265 0 -0.120000000000008"
+      rpy="0 0 0" />
+    <parent
+      link="leg_right" />
+    <child
+      link="leg2_right" />
+    <!-- <axis
+      xyz="1 0 0" /> -->
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot1_right">
+    <inertial>
+      <!-- <origin
+        xyz="-0.0265822088686737 0.0182514148314177 0.00971017334244767"
+        rpy="0 0 0" />
+      <mass
+        value="0.177450615338578" /> -->
+      <!-- <inertia
+        ixx="0.000125000929585061"
+        ixy="2.75508514762772E-07"
+        ixz="1.96364799986357E-07"
+        iyy="1.35635016495756E-05"
+        iyz="-1.18157178553736E-05"
+        izz="0.000127810804117428" /> -->
+      <!-- <inertia
+        ixx="0.0001181817"
+        ixy="0"
+        ixz="0"
+        iyy="0.000147727125"
+        iyz="0"
+        izz="7.6818105e-05" /> -->
+      <origin
+        xyz="-0.03862189371824 -0.0175901755307635 0.0141878018170996"
+        rpy="0 0 0" />
+      <mass
+        value="0.158402372500407" />
+      <inertia
+        ixx="5.3375881657705E-05"
+        ixy="4.51772963351962E-20"
+        ixz="-2.02463791843962E-07"
+        iyy="5.4245870255136E-05"
+        iyz="-1.90078678504309E-07"
+        izz="3.2547948310614E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot1_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.88271 0.91378 0.96441 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot1_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot1_right"
+    type="continuous">
+    <!-- <origin
+      xyz="0 -0.1146 -0.061382"
+      rpy="-1.05 0 0" /> -->
+      <!--rpy="0 0 0" put -0.83 into r-->
+    <origin
+      xyz="0 0.011730641825261 -0.129469656840417"
+      rpy="0 0 0" />
+    <parent
+      link="leg2_right" />
+    <child
+      link="foot1_right" />
+    <!-- <axis
+      xyz="1 0 0" /> -->
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot2_right">
+    <inertial>
+      <!-- <origin
+        xyz="0.0069030606371967 -0.0385611288608892 0.0368864105375638"
+        rpy="0 0 0" />
+      <mass
+        value="0.133904507779755" /> -->
+      <!-- <inertia
+        ixx="0.0001732330811679"
+        ixy="-2.45904194210046E-06"
+        ixz="-1.86270409287037E-06"
+        iyy="0.000222022543722331"
+        iyz="3.10162755525428E-06"
+        izz="6.60854883669796E-05" /> -->
+      <!-- <inertia
+        ixx="0.000919188225"
+        ixy="0"
+        ixz="0"
+        iyy="0.00132721812"
+        iyz="0"
+        izz="0.000488739105" /> -->
+      <origin
+        xyz="0.00644468610549209 -0.00115042641687507 -0.0360005503131604"
+        rpy="0 0 0" />
+      <mass
+        value="0.143428639592448" />
+      <inertia
+        ixx="0.000141337401597565"
+        ixy="8.13812964666709E-12"
+        ixz="-9.05359254310782E-12"
+        iyy="5.04596437658567E-05"
+        iyz="-3.20375904544445E-07"
+        izz="0.000183618474018626" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89875 0.91729 0.92982 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/foot2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot2_right"
+    type="continuous">
+    <!-- <origin
+      xyz="-0.0265 -0.035971 0.0061902"
+      rpy="1.753 0.0141 3.1487" /> -->
+      <!--rpy="1.883 -0.9859 2.8787" put -1.08 into p-->
+    <origin
+      xyz="-0.0385989383789022 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="foot1_right" />
+    <child
+      link="foot2_right" />
+    <!-- <axis
+      xyz="0 0 1" /> -->
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+<!-- camera -->
+  <!-- <link
+    name="body_camera">
+    <inertial>
+      <origin
+        xyz="-0.000405776775139921 -0.0107849933603513 0.0157740430047439"
+        rpy="0 -1.5708 0" />
+      <mass
+        value="0.00912844677087833" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="-0.000405776775139921 -0.0107849933603513 0.0157740430047439"
+        rpy="0 -1.5708 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.000405776775139921 -0.0107849933603513 0.0157740430047439"
+        rpy="0 -1.5708 0" />
+      <geometry>
+        <mesh
+          filename="./meshes/body_camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_camera"
+    type="fixed">
+    <origin
+      xyz="-0.02015 -0.019786 -0.040504"
+      rpy="1.1437 0 0" />
+    <parent
+      link="body_head2" />
+    <child
+      link="body_camera" />
+    <axis
+      xyz="-1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint> -->
+<!-- gazebo -->
+  <!-- <gazebo reference="body_chest">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Gray</material>
+  </gazebo>
+  <gazebo reference="body_head">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Green</material>
+  </gazebo>
+  <gazebo reference="body_head2">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Green</material>
+  </gazebo>
+  <gazebo reference="arm_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="hand_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="arm_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="hand_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="body_hip">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Green</material>
+  </gazebo>
+  <gazebo reference="body_hip_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="body_hip2_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="leg_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="leg2_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="foot1_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="foot2_left">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="body_hip_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="body_hip2_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="leg_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="leg2_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="foot1_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+     <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="foot2_right">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo> -->
+  <!-- <gazebo reference="body_camera">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Red</material>
+    <sensor type="camera" name="camera1">
+      <always_on>1</always_on>
+      <updateRate>30.0</updateRate>
+      <visualize>true</visualize>
+      <camera name="head">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type> -->
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <!-- <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>dancer_urdf_model/camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link_optical</frameName>
+        <hackBaseline>0.0</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>0.0</Cx>
+        <Cy>0.0</Cy>
+        <focalLength>0.0</focalLength>
+      </plugin>
+    </sensor>
+  </gazebo> -->
+<!-- transmission -->
+  <!-- <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/dancer_urdf_model</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>
+  <transmission name="trans_body_head">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_head">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_head">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_body_head2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_head2">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_head2">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_arm_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_arm_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_arm_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_hand_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_hand_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_hand_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_arm_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_arm_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_arm_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_hand_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_hand_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_hand_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_body_hip">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_hip">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_hip">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_body_hip_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_hip_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_hip_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_body_hip2_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_hip2_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_hip2_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_leg_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_leg_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_leg_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_leg2_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_leg2_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_leg2_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_foot1_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_foot1_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_foot1_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_foot2_left">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_foot2_left">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_foot2_left">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_body_hip_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_hip_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_hip_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_body_hip2_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_body_hip2_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_body_hip2_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_leg_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_leg_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_leg_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_leg2_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_leg2_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_leg2_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_foot1_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_foot1_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_foot1_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+  <transmission name="trans_foot2_right">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_foot2_right">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_foot2_right">
+      <mechanicalReduction>1</mechanicalReduction>
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </actuator>
+  </transmission> -->
+</robot>
