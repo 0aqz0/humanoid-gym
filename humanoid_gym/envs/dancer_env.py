@@ -11,7 +11,7 @@ class DancerEnv(gym.Env):
     def __init__(self):
         super(DancerEnv, self).__init__()
         p.connect(p.GUI)
-        p.resetDebugVisualizerCamera(cameraDistance=1.5, cameraYaw=90, cameraPitch=-20, cameraTargetPosition=[0,0,0.1])
+        p.resetDebugVisualizerCamera(cameraDistance=1.5, cameraYaw=0, cameraPitch=-20, cameraTargetPosition=[0,0,0.1])
         self.reset()
 
     def step(self, action, custom_reward=None):
@@ -56,7 +56,7 @@ class DancerEnv(gym.Env):
         p.resetSimulation()
         self.step_counter = 0
         self.dancerUid = p.loadURDF(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-            "assets/dancer/dancer_urdf_model.URDF"), basePosition=[1,0,0.3], baseOrientation=[-0.7071068,0,0,0.7071068],
+            "assets/dancer/dancer_urdf_model.URDF"), basePosition=[0.8,-0.5,0.3], baseOrientation=[-0.7071068,0,0,0.7071068],
             flags=p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.ground_id = p.loadMJCF("mjcf/ground_plane.xml") # ground plane
