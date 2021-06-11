@@ -12,7 +12,7 @@ class NaoEnv(gym.Env):
     def __init__(self):
         super(NaoEnv, self).__init__()
         self.simulation_manager = SimulationManager()
-        self.client = self.simulation_manager.launchSimulation(gui=True)
+        self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
         time.sleep(1.0)
@@ -27,34 +27,58 @@ class NaoEnv(gym.Env):
                 self.lower_limits.append(joint.getLowerLimit())
                 self.upper_limits.append(joint.getUpperLimit())
                 self.init_angles.append(self.robot.getAnglesPosition(name))
+        self.link_names = []
+        for name, link in self.robot.link_dict.items():
+            if "Finger" not in name and "Thumb" not in name and 'frame' not in name:
+                self.link_names.append(name)
         self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
-        self.observation_space = spaces.Box(np.array([-1]*len(self.joint_names)), np.array([1]*len(self.joint_names)))
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=self._get_obs().shape, dtype="float32")
+        self._max_episode_steps = 1000  # float('inf')
+
+    def _get_obs(self):
+        link_translations = []
+        link_quaternions = []
+        for name in self.link_names:
+            translation, quaternion = self.robot.getLinkPosition(name)
+            link_translations.append(translation)
+            link_quaternions.append(quaternion)
+        link_translations = np.concatenate(link_translations, axis=0)
+        link_quaternions = np.concatenate(link_quaternions, axis=0)
+        obs = np.concatenate([np.array(self.robot.getPosition())/10.0,
+                              np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
+                              np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
+                              link_translations, link_quaternions])
+        return obs
 
     def step(self, actions):
+        pos_before = self.robot.getPosition()
+
+        actions = np.array(self.robot.getAnglesPosition(self.joint_names)) + np.array(actions)
+        # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
-        # set joint angles
+        
         self.robot.setAngles(self.joint_names, actions, 1.0)
+        self.simulation_manager.stepSimulation(self.client)
 
-        # get observations
-        observation = {
-            'position': self.robot.getPosition(),
-            'anglesPosition': self.robot.getAnglesPosition(self.joint_names),
-            'anglesVelocity': self.robot.getAnglesVelocity(self.joint_names),
-            # TODO: add more observations
-            }
-
-        # TODO: design your reward
-        reward = 0
-        done = False
+        pos_after = self.robot.getPosition()
+        alive_bonus = 5.0
+        lin_vel_cost = 1.25 * np.linalg.norm(np.array(pos_after[:2]) - np.array(pos_before[:2]))
+        quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
+        quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
+        quad_impact_cost = min(quad_impact_cost, 10)
+        reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
+        torso_height = self.robot.getLinkPosition("torso")[0][2]
+        done = torso_height < 0.28 or torso_height > 0.4
         info = {}
-
-        return observation, reward, done, info
+        # print(self._get_obs())
+        return self._get_obs(), reward, done, info
 
     def reset(self):
-        self.simulation_manager.removeNao(self.robot)
-        self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-        time.sleep(1.0)
+        p.resetBasePositionAndOrientation(self.robot.getRobotModel(), [0, 0, 0.34], [0, 0, 0, 1])
+        for joint_name, init_angle in zip(self.joint_names, self.init_angles):
+            p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle)
+        return self._get_obs()
 
     def render(self, mode='human'):
         view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition=[0.5,0,0.5],
