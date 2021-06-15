@@ -6,6 +6,7 @@ import numpy as np
 from qibullet import SimulationManager
 from qibullet import NaoVirtual
 import time
+import h5py
 
 class NaoEnv(gym.Env):
     """docstring for NaoEnv"""
@@ -28,9 +29,9 @@ class NaoEnv(gym.Env):
                 self.upper_limits.append(joint.getUpperLimit())
                 self.init_angles.append(self.robot.getAnglesPosition(name))
         self.link_names = []
-        for name, link in self.robot.link_dict.items():
-            if "Finger" not in name and "Thumb" not in name and 'frame' not in name:
-                self.link_names.append(name)
+        for joint_name in self.joint_names:
+            linkName = p.getJointInfo(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())[12].decode("utf-8")
+            self.link_names.append(linkName)
         self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=self._get_obs().shape, dtype="float32")
         self._max_episode_steps = 1000  # float('inf')
@@ -53,7 +54,7 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.robot.getAnglesPosition(self.joint_names)) + np.array(actions)
+        # actions = np.array(self.robot.getAnglesPosition(self.joint_names)) + np.array(actions)
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
@@ -63,8 +64,28 @@ class NaoEnv(gym.Env):
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
-        lin_vel_cost = 1.25 * np.linalg.norm(np.array(pos_after[:2]) - np.array(pos_before[:2]))
-        quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
+        # trajectory tracking reward
+        # dir_path = os.path.dirname(os.path.realpath(__file__))
+        file = 'inference.h5'#os.path.join(dir_path, '../../processed-wo.h5')
+        hf = h5py.File(file, 'r')
+        group1 = hf.get('group1')
+        joint_angles = group1.get('joint_angle')
+        joint_pos = group1.get('joint_pos')
+        total_frames = joint_angles.shape[0]
+        link_translations = []
+        link_quaternions = []
+        for name in self.link_names:
+            translation, quaternion = self.robot.getLinkPosition(name)
+            link_translations.append(translation)
+            link_quaternions.append(quaternion)
+        link_translations = np.stack(link_translations, axis=0)
+        link_translations -= np.array(self.robot.getLinkPosition("torso")[0])
+        link_quaternions = np.stack(link_quaternions, axis=0)
+        t = 0
+        pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
+
+        lin_vel_cost = 0  # 1.25 * np.linalg.norm(np.array(pos_after[:2]) - np.array(pos_before[:2]))
+        quad_ctrl_cost = 0  # 0.1 * np.square(np.array(actions)).sum()
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
