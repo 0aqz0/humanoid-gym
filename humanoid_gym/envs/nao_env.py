@@ -66,26 +66,26 @@ class NaoEnv(gym.Env):
         alive_bonus = 5.0
         # trajectory tracking reward
         # dir_path = os.path.dirname(os.path.realpath(__file__))
-        file = 'inference.h5'#os.path.join(dir_path, '../../processed-wo.h5')
-        hf = h5py.File(file, 'r')
-        group1 = hf.get('group1')
-        joint_angles = group1.get('joint_angle')
-        joint_pos = group1.get('joint_pos')
-        total_frames = joint_angles.shape[0]
-        link_translations = []
-        link_quaternions = []
-        for name in self.link_names:
-            translation, quaternion = self.robot.getLinkPosition(name)
-            link_translations.append(translation)
-            link_quaternions.append(quaternion)
-        link_translations = np.stack(link_translations, axis=0)
-        link_translations -= np.array(self.robot.getLinkPosition("torso")[0])
-        link_quaternions = np.stack(link_quaternions, axis=0)
-        t = 0
-        pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
+        # file = 'inference.h5'#os.path.join(dir_path, '../../processed-wo.h5')
+        # hf = h5py.File(file, 'r')
+        # group1 = hf.get('group1')
+        # joint_angles = group1.get('joint_angle')
+        # joint_pos = group1.get('joint_pos')
+        # total_frames = joint_angles.shape[0]
+        # link_translations = []
+        # link_quaternions = []
+        # for name in self.link_names:
+        #     translation, quaternion = self.robot.getLinkPosition(name)
+        #     link_translations.append(translation)
+        #     link_quaternions.append(quaternion)
+        # link_translations = np.stack(link_translations, axis=0)
+        # link_translations -= np.array(self.robot.getLinkPosition("torso")[0])
+        # link_quaternions = np.stack(link_quaternions, axis=0)
+        # t = 0
+        # pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
 
-        lin_vel_cost = 0  # 1.25 * np.linalg.norm(np.array(pos_after[:2]) - np.array(pos_before[:2]))
-        quad_ctrl_cost = 0  # 0.1 * np.square(np.array(actions)).sum()
+        lin_vel_cost = 0  # 1.25 * pos_after[0] - pos_before[0]
+        quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
