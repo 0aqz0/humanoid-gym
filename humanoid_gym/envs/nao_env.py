@@ -84,7 +84,7 @@ class NaoEnv(gym.Env):
         # t = 0
         # pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
 
-        lin_vel_cost = 0  # 1.25 * pos_after[0] - pos_before[0]
+        lin_vel_cost = 125 * (pos_after[0] - pos_before[0])
         quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
