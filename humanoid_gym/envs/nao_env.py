@@ -12,22 +12,30 @@ class NaoEnv(gym.Env):
     """docstring for NaoEnv"""
     def __init__(self):
         super(NaoEnv, self).__init__()
+        # read imitation results
+        file = 'inference.h5'
+        hf = h5py.File(file, 'r')
+        group1 = hf.get('group1')
+        self.joint_angles = group1.get('joint_angle')[:, 1:]
+        self.joint_pos = group1.get('joint_pos')
+        self.total_frames = self.joint_angles.shape[0]
+        self.t = 0
+
         self.simulation_manager = SimulationManager()
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
         time.sleep(1.0)
 
-        self.joint_names = []
+        self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
         self.init_angles = []
-        for name, joint in self.robot.joint_dict.items():
-            if "Finger" not in name and "Thumb" not in name:
-                self.joint_names.append(name)
-                self.lower_limits.append(joint.getLowerLimit())
-                self.upper_limits.append(joint.getUpperLimit())
-                self.init_angles.append(self.robot.getAnglesPosition(name))
+        for joint_name in self.joint_names:
+            joint = self.robot.joint_dict[joint_name]
+            self.lower_limits.append(joint.getLowerLimit())
+            self.upper_limits.append(joint.getUpperLimit())
+            self.init_angles.append(self.robot.getAnglesPosition(joint_name))
         self.link_names = []
         for joint_name in self.joint_names:
             linkName = p.getJointInfo(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())[12].decode("utf-8")
@@ -48,7 +56,8 @@ class NaoEnv(gym.Env):
         obs = np.concatenate([np.array(self.robot.getPosition())/10.0,
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
-                              link_translations, link_quaternions])
+                              link_translations, link_quaternions,
+                              self.joint_angles[self.t].flatten()])
         return obs
 
     def step(self, actions):
