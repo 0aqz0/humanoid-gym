@@ -40,7 +40,8 @@ class NaoEnv(gym.Env):
         for joint_name in self.joint_names:
             linkName = p.getJointInfo(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())[12].decode("utf-8")
             self.link_names.append(linkName)
-        self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
+        # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
+        self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=self._get_obs().shape, dtype="float32")
         self._max_episode_steps = 1000  # float('inf')
 
@@ -53,7 +54,7 @@ class NaoEnv(gym.Env):
             link_quaternions.append(quaternion)
         link_translations = np.concatenate(link_translations, axis=0)
         link_quaternions = np.concatenate(link_quaternions, axis=0)
-        obs = np.concatenate([np.array(self.robot.getPosition())/10.0,
+        obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
                               link_translations, link_quaternions,
@@ -63,24 +64,17 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        # actions = np.array(self.robot.getAnglesPosition(self.joint_names)) + np.array(actions)
+        actions = np.array(self.joint_angles[self.t]) + np.array(actions)
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
         
-        self.robot.setAngles(self.joint_names, actions, 1.0)
+        self.robot.setAngles(self.joint_names, actions, 0.5)
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
         # trajectory tracking reward
-        # dir_path = os.path.dirname(os.path.realpath(__file__))
-        # file = 'inference.h5'#os.path.join(dir_path, '../../processed-wo.h5')
-        # hf = h5py.File(file, 'r')
-        # group1 = hf.get('group1')
-        # joint_angles = group1.get('joint_angle')
-        # joint_pos = group1.get('joint_pos')
-        # total_frames = joint_angles.shape[0]
         # link_translations = []
         # link_quaternions = []
         # for name in self.link_names:
@@ -92,6 +86,10 @@ class NaoEnv(gym.Env):
         # link_quaternions = np.stack(link_quaternions, axis=0)
         # t = 0
         # pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
+        # current_angles = []
+        # for joint_name in self.joint_names:
+        #     current_angles.append(self.robot.getAnglesPosition(joint_name))
+        # pose_cost = 0 # 10*((self.joint_angles[self.t] - np.array(actions))**2).mean()
 
         lin_vel_cost = 125 * (pos_after[0] - pos_before[0])
         quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
@@ -102,6 +100,9 @@ class NaoEnv(gym.Env):
         done = torso_height < 0.28 or torso_height > 0.4
         info = {}
         # print(self._get_obs())
+        self.t += 1
+        if self.t == self.total_frames:
+            self.t = 0
         return self._get_obs(), reward, done, info
 
     def reset(self):
