@@ -72,7 +72,7 @@ class NaoEnv(gym.Env):
                               root_quaternion,
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
-                              link_translations, link_quaternions,
+                              #link_translations, link_quaternions,
                               self.joint_angles[self.t].flatten()])
         return obs
 
