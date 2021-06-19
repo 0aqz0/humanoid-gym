@@ -7,6 +7,7 @@ from qibullet import SimulationManager
 from qibullet import NaoVirtual
 import time
 import h5py
+from scipy.spatial.transform import Rotation as R
 
 class NaoEnv(gym.Env):
     """docstring for NaoEnv"""
@@ -46,15 +47,29 @@ class NaoEnv(gym.Env):
         self._max_episode_steps = 1000  # float('inf')
 
     def _get_obs(self):
+        # get root transform matrix
+        root_translation, root_quaternion = self.robot.getLinkPosition("torso")
+        root_transform = np.eye(4)
+        root_transform[:3, :3] = R.from_quat(root_quaternion).as_matrix()
+        root_transform[:3, 3] = root_translation
+        # get local position & rotation
         link_translations = []
         link_quaternions = []
         for name in self.link_names:
             translation, quaternion = self.robot.getLinkPosition(name)
+            transform = np.eye(4)
+            transform[:3, :3] = R.from_quat(quaternion).as_matrix()
+            transform[:3, 3] = translation
+            transform = np.linalg.inv(root_transform) @ transform
+            translation = transform[:3, 3]
+            quaternion = R.from_matrix(transform[:3, :3]).as_quat()
             link_translations.append(translation)
             link_quaternions.append(quaternion)
+
         link_translations = np.concatenate(link_translations, axis=0)
         link_quaternions = np.concatenate(link_quaternions, axis=0)
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
+                              root_quaternion,
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
                               link_translations, link_quaternions,
