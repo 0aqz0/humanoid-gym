@@ -43,7 +43,8 @@ class NaoEnv(gym.Env):
             self.link_names.append(linkName)
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
-        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=self._get_obs().shape, dtype="float32")
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*3,), dtype="float32")
+        self.obs_history = []
         self._max_episode_steps = 1000  # float('inf')
 
     def _get_obs(self):
@@ -68,13 +69,27 @@ class NaoEnv(gym.Env):
 
         link_translations = np.concatenate(link_translations, axis=0)
         link_quaternions = np.concatenate(link_quaternions, axis=0)
+
+        l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
+        r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
+        l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
+        r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               root_quaternion,
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
                               #link_translations, link_quaternions,
+                              l_touch_ground, r_touch_ground,
                               self.joint_angles[self.t].flatten()])
         return obs
+
+    def _get_obs_history(self):
+        self.obs_history.append(self._get_obs())
+        if len(self.obs_history) < 3:
+            concat_obs = np.concatenate([self.obs_history[-1]]*3, axis=0)
+        else:
+            concat_obs = np.concatenate(self.obs_history[-3:], axis=0)
+        return concat_obs
 
     def step(self, actions):
         pos_before = self.robot.getPosition()
@@ -106,7 +121,7 @@ class NaoEnv(gym.Env):
         #     current_angles.append(self.robot.getAnglesPosition(joint_name))
         # pose_cost = 0 # 10*((self.joint_angles[self.t] - np.array(actions))**2).mean()
 
-        lin_vel_cost = 125 * (pos_after[0] - pos_before[0])
+        lin_vel_cost = 4 * 125 * (pos_after[0] - pos_before[0])
         quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
@@ -118,13 +133,14 @@ class NaoEnv(gym.Env):
         self.t += 1
         if self.t == self.total_frames:
             self.t = 0
-        return self._get_obs(), reward, done, info
+        return self._get_obs_history(), reward, done, info
 
     def reset(self):
         p.resetBasePositionAndOrientation(self.robot.getRobotModel(), [0, 0, 0.34], [0, 0, 0, 1])
         for joint_name, init_angle in zip(self.joint_names, self.init_angles):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle)
-        return self._get_obs()
+        self.obs_history = []
+        return self._get_obs_history()
 
     def render(self, mode='human'):
         view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition=[0.5,0,0.5],
