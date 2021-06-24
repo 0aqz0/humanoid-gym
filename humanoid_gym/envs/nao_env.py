@@ -28,6 +28,16 @@ class NaoEnv(gym.Env):
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
         time.sleep(1.0)
 
+        # change friction
+        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
+        print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
+        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
+        print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
+        self.friction = 1.0
+        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
+        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
+        # p.changeVisualShape(self.robot.getRobotModel(), self.robot.link_dict['l_ankle'].getIndex(), rgbaColor=(255,0,0,1))
+
         self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
