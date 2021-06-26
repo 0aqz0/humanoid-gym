@@ -131,14 +131,77 @@ class NaoEnv(gym.Env):
         #     current_angles.append(self.robot.getAnglesPosition(joint_name))
         # pose_cost = 0 # 10*((self.joint_angles[self.t] - np.array(actions))**2).mean()
 
+        # row pitch tracking reward
+        _, root_quaternion = self.robot.getLinkPosition("torso")
+        root_rpy = R.from_quat(root_quaternion).as_euler("xyz", degrees=True)
+        hip_rpy = [180, 0, 0]  # self.hip_rpy[self.t]
+        rp_tracking_cost = 0.001 * np.square(np.array(root_rpy[1:]) - np.array(hip_rpy[1:])).sum()
+
+        # foot position tracking reward
+        root_translation, root_quaternion = self.robot.getLinkPosition("torso")
+        root_transform = np.eye(4)
+        root_transform[:3, :3] = R.from_quat(root_quaternion).as_matrix()
+        root_transform[:3, 3] = root_translation
+        l_ankle_pos, l_ankle_quat = self.robot.getLinkPosition("l_ankle")
+        l_transform = np.eye(4)
+        l_transform[:3, :3] = R.from_quat(l_ankle_quat).as_matrix()
+        l_transform[:3, 3] = l_ankle_pos
+        l_transform = np.linalg.inv(root_transform) @ l_transform
+        l_translation = l_transform[:3, 3]
+        l_reference = self.joint_pos[self.t, 20]
+        r_ankle_pos, r_ankle_quat = self.robot.getLinkPosition("r_ankle")
+        r_transform = np.eye(4)
+        r_transform[:3, :3] = R.from_quat(r_ankle_quat).as_matrix()
+        r_transform[:3, 3] = r_ankle_pos
+        r_transform = np.linalg.inv(root_transform) @ r_transform
+        r_translation = r_transform[:3, 3]
+        r_reference = self.joint_pos[self.t, 26]
+        # print(l_translation, l_reference, r_translation, r_reference)
+        foot_tracking_cost = 1.0 * (np.square(l_translation - l_reference).sum() + np.square(r_translation - r_reference).sum())
+
+        # zmp reward
+        from shapely.geometry import Point
+        from shapely.geometry.polygon import Polygon
+        l_sole_pos, l_sole_quat = self.robot.getLinkPosition("l_sole")
+        l_sole_matrix = R.from_quat(l_sole_quat).as_matrix()
+        p1 = l_sole_pos + l_sole_matrix @ [-0.06, 0.05, 0]
+        p2 = l_sole_pos + l_sole_matrix @ [0.1, 0.05, 0]
+        p3 = l_sole_pos + l_sole_matrix @ [-0.06, -0.04, 0]
+        p4 = l_sole_pos + l_sole_matrix @ [0.1, -0.04, 0]
+        # p.addUserDebugLine(p1, p2)
+        # p.addUserDebugLine(p3, p4)
+        # p.addUserDebugLine(p1, p3)
+        # p.addUserDebugLine(p2, p4)
+        l_polygon = Polygon([p1[:2], p2[:2], p3[:2], p4[:2]])
+        r_sole_pos, r_sole_quat = self.robot.getLinkPosition("r_sole")
+        r_sole_matrix = R.from_quat(r_sole_quat).as_matrix()
+        p1 = r_sole_pos + r_sole_matrix @ [-0.06, -0.05, 0]
+        p2 = r_sole_pos + r_sole_matrix @ [0.1, -0.05, 0]
+        p3 = r_sole_pos + r_sole_matrix @ [-0.06, 0.04, 0]
+        p4 = r_sole_pos + r_sole_matrix @ [0.1, 0.04, 0]
+        # p.addUserDebugLine(p1, p2)
+        # p.addUserDebugLine(p3, p4)
+        # p.addUserDebugLine(p1, p3)
+        # p.addUserDebugLine(p2, p4)
+        r_polygon = Polygon([p1[:2], p2[:2], p3[:2], p4[:2]])
+        root_translation, _ = self.robot.getLinkPosition("torso")
+        root_point = Point(root_translation[:2])
+        zmp_cost = 0.5 if l_polygon.contains(root_point) or r_polygon.contains(root_point) else 0.0
+
         lin_vel_cost = 4 * 125 * (pos_after[0] - pos_before[0])
         quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
+        # reward -= rp_tracking_cost
+        # reward -= foot_tracking_cost
+        reward += zmp_cost
         torso_height = self.robot.getLinkPosition("torso")[0][2]
         done = torso_height < 0.28 or torso_height > 0.4
-        info = {}
+        info = {'alive_bonus': alive_bonus, 'rp_tracking_cost': rp_tracking_cost,
+                'foot_tracking_cost': foot_tracking_cost, 'zmp_cost': zmp_cost,
+                'lin_vel_cost': lin_vel_cost, 'quad_ctrl_cost': quad_ctrl_cost,
+                'quad_impact_cost': quad_impact_cost, 'alive_bonus': alive_bonus}
         # print(self._get_obs())
         self.t += 1
         if self.t == self.total_frames:
