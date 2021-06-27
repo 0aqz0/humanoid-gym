@@ -26,7 +26,6 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-        time.sleep(1.0)
 
         # change friction
         dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
@@ -109,11 +108,11 @@ class NaoEnv(gym.Env):
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
         
-        self.robot.setAngles(self.joint_names, actions, 0.5)
+        self.robot.setAngles(self.joint_names, actions, 1.0)
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
-        alive_bonus = 5.0
+        alive_bonus = 1.0
         # trajectory tracking reward
         # link_translations = []
         # link_quaternions = []
@@ -195,7 +194,7 @@ class NaoEnv(gym.Env):
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
         # reward -= rp_tracking_cost
         # reward -= foot_tracking_cost
-        reward += zmp_cost
+        # reward += zmp_cost
         torso_height = self.robot.getLinkPosition("torso")[0][2]
         done = torso_height < 0.28 or torso_height > 0.4
         info = {'alive_bonus': alive_bonus, 'rp_tracking_cost': rp_tracking_cost,
@@ -210,8 +209,10 @@ class NaoEnv(gym.Env):
 
     def reset(self):
         p.resetBasePositionAndOrientation(self.robot.getRobotModel(), [0, 0, 0.34], [0, 0, 0, 1])
+        p.resetBaseVelocity(self.robot.getRobotModel(), [0, 0, 0], [0, 0, 0])
         for joint_name, init_angle in zip(self.joint_names, self.init_angles):
-            p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle)
+            p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
+        self.t = 0
         self.obs_history = []
         return self._get_obs_history()
 
