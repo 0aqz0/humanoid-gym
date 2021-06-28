@@ -112,7 +112,7 @@ class NaoEnv(gym.Env):
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
-        alive_bonus = 1.0
+        alive_bonus = 5.0
         # trajectory tracking reward
         # link_translations = []
         # link_quaternions = []
