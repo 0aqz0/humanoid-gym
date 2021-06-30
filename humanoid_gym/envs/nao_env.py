@@ -163,29 +163,30 @@ class NaoEnv(gym.Env):
         from shapely.geometry.polygon import Polygon
         l_sole_pos, l_sole_quat = self.robot.getLinkPosition("l_sole")
         l_sole_matrix = R.from_quat(l_sole_quat).as_matrix()
-        p1 = l_sole_pos + l_sole_matrix @ [-0.06, 0.05, 0]
-        p2 = l_sole_pos + l_sole_matrix @ [0.1, 0.05, 0]
-        p3 = l_sole_pos + l_sole_matrix @ [-0.06, -0.04, 0]
-        p4 = l_sole_pos + l_sole_matrix @ [0.1, -0.04, 0]
-        # p.addUserDebugLine(p1, p2)
-        # p.addUserDebugLine(p3, p4)
-        # p.addUserDebugLine(p1, p3)
-        # p.addUserDebugLine(p2, p4)
-        l_polygon = Polygon([p1[:2], p2[:2], p3[:2], p4[:2]])
+        l_p1 = l_sole_pos + l_sole_matrix @ [-0.06, 0.05, 0]
+        l_p2 = l_sole_pos + l_sole_matrix @ [0.1, 0.05, 0]
+        l_p3 = l_sole_pos + l_sole_matrix @ [-0.06, -0.04, 0]
+        l_p4 = l_sole_pos + l_sole_matrix @ [0.1, -0.04, 0]
+        # p.addUserDebugLine(l_p1, l_p2)
+        # p.addUserDebugLine(l_p3, l_p4)
+        # p.addUserDebugLine(l_p1, l_p3)
+        # p.addUserDebugLine(l_p2, l_p4)
+        l_polygon = Polygon([l_p1[:2], l_p2[:2], l_p3[:2], l_p4[:2]])
         r_sole_pos, r_sole_quat = self.robot.getLinkPosition("r_sole")
         r_sole_matrix = R.from_quat(r_sole_quat).as_matrix()
-        p1 = r_sole_pos + r_sole_matrix @ [-0.06, -0.05, 0]
-        p2 = r_sole_pos + r_sole_matrix @ [0.1, -0.05, 0]
-        p3 = r_sole_pos + r_sole_matrix @ [-0.06, 0.04, 0]
-        p4 = r_sole_pos + r_sole_matrix @ [0.1, 0.04, 0]
-        # p.addUserDebugLine(p1, p2)
-        # p.addUserDebugLine(p3, p4)
-        # p.addUserDebugLine(p1, p3)
-        # p.addUserDebugLine(p2, p4)
-        r_polygon = Polygon([p1[:2], p2[:2], p3[:2], p4[:2]])
+        r_p1 = r_sole_pos + r_sole_matrix @ [-0.06, -0.05, 0]
+        r_p2 = r_sole_pos + r_sole_matrix @ [0.1, -0.05, 0]
+        r_p3 = r_sole_pos + r_sole_matrix @ [-0.06, 0.04, 0]
+        r_p4 = r_sole_pos + r_sole_matrix @ [0.1, 0.04, 0]
+        # p.addUserDebugLine(r_p1, r_p2)
+        # p.addUserDebugLine(r_p3, r_p4)
+        # p.addUserDebugLine(r_p1, r_p3)
+        # p.addUserDebugLine(r_p2, r_p4)
+        r_polygon = Polygon([r_p1[:2], r_p2[:2], r_p3[:2], r_p4[:2]])
+        m_polygon = Polygon([l_p3[:2], l_p4[:2], r_p3[:2], r_p4[:2]])
         root_translation, _ = self.robot.getLinkPosition("torso")
         root_point = Point(root_translation[:2])
-        zmp_cost = 0.5 if l_polygon.contains(root_point) or r_polygon.contains(root_point) else 0.0
+        zmp_cost = 0.5 if l_polygon.contains(root_point) or r_polygon.contains(root_point) or m_polygon.contains(root_point) else 0.0
 
         lin_vel_cost = 4 * 125 * (pos_after[0] - pos_before[0])
         quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
