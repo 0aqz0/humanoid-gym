@@ -7,6 +7,7 @@ from qibullet import SimulationManager
 from qibullet import NaoVirtual
 import time
 import h5py
+import random
 from scipy.spatial.transform import Rotation as R
 
 class NaoEnv(gym.Env):
@@ -28,13 +29,13 @@ class NaoEnv(gym.Env):
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
 
         # change friction
-        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
-        print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
-        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
-        print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
-        self.friction = 1.0
-        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
-        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
+        # dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
+        # print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
+        # dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
+        # print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
+        # self.friction = 1.0
+        # p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
+        # p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
         # p.changeVisualShape(self.robot.getRobotModel(), self.robot.link_dict['l_ankle'].getIndex(), rgbaColor=(255,0,0,1))
 
         self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
@@ -50,6 +51,21 @@ class NaoEnv(gym.Env):
         for joint_name in self.joint_names:
             linkName = p.getJointInfo(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())[12].decode("utf-8")
             self.link_names.append(linkName)
+
+        # default dynamics properties
+        self.joint_dampings = {}  # all zeros
+        for i in range(p.getNumJoints(self.robot.getRobotModel())):
+            joint_info = p.getJointInfo(self.robot.getRobotModel(), i)
+            link_name = joint_info[12].decode("utf-8")
+            joint_damping = joint_info[6]
+            self.joint_dampings[link_name] = joint_damping
+        self.link_mass = {}
+        self.mass_center = {}
+        for name, link in self.robot.link_dict.items():
+            dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), link.getIndex())
+            self.link_mass[name] = dynamics_info[0]
+            self.mass_center[name] = dynamics_info[3]
+
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*3,), dtype="float32")
@@ -217,6 +233,13 @@ class NaoEnv(gym.Env):
         p.resetBaseVelocity(self.robot.getRobotModel(), [0, 0, 0], [0, 0, 0])
         for joint_name, init_angle in zip(self.joint_names, self.init_angles):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
+
+        # dynamics randomization
+        p.setGravity(0, 0, -10 + random.uniform(-1, 1))
+        p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=random.uniform(0.5, 2.0))
+        for name, link in self.robot.link_dict.items():
+            p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
+
         self.t = 0
         self.obs_history = []
         return self._get_obs_history()
