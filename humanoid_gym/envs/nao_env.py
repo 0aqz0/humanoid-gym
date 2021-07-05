@@ -10,6 +10,16 @@ import h5py
 import random
 from scipy.spatial.transform import Rotation as R
 
+def linear_interpolate(data):
+    total_frames = data.shape[0]
+    new_data = []
+    for t in range(2*total_frames-1):
+        if t % 2 == 0:
+            new_data.append(data[t//2])
+        else:
+            new_data.append((data[t//2] + data[t//2])/2)
+    return np.stack(new_data, axis=0)
+
 class NaoEnv(gym.Env):
     """docstring for NaoEnv"""
     def __init__(self):
@@ -18,8 +28,10 @@ class NaoEnv(gym.Env):
         file = 'inference.h5'
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:, 1:]
-        self.joint_pos = group1.get('joint_pos')[4:]
+        self.joint_angles = group1.get('joint_angle')[4:-65, 1:]
+        self.joint_angles = linear_interpolate(self.joint_angles)
+        self.joint_pos = group1.get('joint_pos')[4:-65]
+        self.joint_pos = linear_interpolate(self.joint_pos)
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -235,10 +247,10 @@ class NaoEnv(gym.Env):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
 
         # dynamics randomization
-        p.setGravity(0, 0, -10 + random.uniform(-1, 1))
-        p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=random.uniform(0.5, 2.0))
-        for name, link in self.robot.link_dict.items():
-            p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
+        # p.setGravity(0, 0, -10 + random.uniform(-1, 1))
+        # p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=random.uniform(0.5, 2.0))
+        # for name, link in self.robot.link_dict.items():
+        #     p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
 
         self.t = 0
         self.obs_history = []
