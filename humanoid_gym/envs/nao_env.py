@@ -247,10 +247,10 @@ class NaoEnv(gym.Env):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
 
         # dynamics randomization
-        # p.setGravity(0, 0, -10 + random.uniform(-1, 1))
-        # p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=random.uniform(0.5, 2.0))
-        # for name, link in self.robot.link_dict.items():
-        #     p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
+        p.setGravity(0, 0, -10 + random.uniform(-1, 1))
+        p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=random.uniform(0.5, 2.0))
+        for name, link in self.robot.link_dict.items():
+            p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
 
         self.t = 0
         self.obs_history = []
