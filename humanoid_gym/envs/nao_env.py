@@ -115,7 +115,7 @@ class NaoEnv(gym.Env):
         r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         # print(l_foot_fsr, r_foot_fsr)
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
-                              root_quaternion,
+                              R.from_quat(root_quaternion).as_euler('xyz'),
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
                               #link_translations, link_quaternions,
