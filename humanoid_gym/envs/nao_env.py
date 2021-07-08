@@ -29,9 +29,9 @@ class NaoEnv(gym.Env):
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
         self.joint_angles = group1.get('joint_angle')[4:-65, 1:]
-        self.joint_angles = linear_interpolate(self.joint_angles)
+        # self.joint_angles = linear_interpolate(self.joint_angles)
         self.joint_pos = group1.get('joint_pos')[4:-65]
-        self.joint_pos = linear_interpolate(self.joint_pos)
+        # self.joint_pos = linear_interpolate(self.joint_pos)
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
