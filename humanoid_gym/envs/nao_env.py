@@ -121,7 +121,8 @@ class NaoEnv(gym.Env):
                               #link_translations, link_quaternions,
                               l_touch_ground, r_touch_ground,
                               #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
-                              self.joint_angles[self.t].flatten()])
+                              #self.joint_angles[self.t].flatten()])
+                              np.array([self.t/self.total_frames])])
         return obs
 
     def _get_obs_history(self):
