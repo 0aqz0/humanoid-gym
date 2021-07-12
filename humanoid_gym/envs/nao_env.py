@@ -34,6 +34,7 @@ class NaoEnv(gym.Env):
         # self.joint_pos = linear_interpolate(self.joint_pos)
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
+        self.speed = 1.0 # np.random.choice([0.75, 1.0, 1.5])
 
         self.simulation_manager = SimulationManager()
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
@@ -122,7 +123,7 @@ class NaoEnv(gym.Env):
                               l_touch_ground, r_touch_ground,
                               #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
                               #self.joint_angles[self.t].flatten()])
-                              np.array([self.t/self.total_frames])])
+                              np.array([int(self.t)/self.total_frames])])
         return obs
 
     def _get_obs_history(self):
@@ -136,7 +137,7 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.joint_angles[self.t]) + np.array(actions) + np.clip(0.1*np.random.randn(len(self.joint_names)), -0.1, 0.1)
+        actions = np.array(self.joint_angles[int(self.t)]) + np.array(actions)
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
@@ -180,14 +181,14 @@ class NaoEnv(gym.Env):
         l_transform[:3, 3] = l_ankle_pos
         l_transform = np.linalg.inv(root_transform) @ l_transform
         l_translation = l_transform[:3, 3]
-        l_reference = self.joint_pos[self.t, 20]
+        l_reference = self.joint_pos[int(self.t), 20]
         r_ankle_pos, r_ankle_quat = self.robot.getLinkPosition("r_ankle")
         r_transform = np.eye(4)
         r_transform[:3, :3] = R.from_quat(r_ankle_quat).as_matrix()
         r_transform[:3, 3] = r_ankle_pos
         r_transform = np.linalg.inv(root_transform) @ r_transform
         r_translation = r_transform[:3, 3]
-        r_reference = self.joint_pos[self.t, 26]
+        r_reference = self.joint_pos[int(self.t), 26]
         # print(l_translation, l_reference, r_translation, r_reference)
         foot_tracking_cost = 1.0 * (np.square(l_translation - l_reference).sum() + np.square(r_translation - r_reference).sum())
 
@@ -236,8 +237,8 @@ class NaoEnv(gym.Env):
                 'lin_vel_cost': lin_vel_cost, 'quad_ctrl_cost': quad_ctrl_cost,
                 'quad_impact_cost': quad_impact_cost, 'alive_bonus': alive_bonus}
         # print(self._get_obs())
-        self.t += 1
-        if self.t == self.total_frames:
+        self.t += self.speed
+        if self.t >= self.total_frames:
             self.t = 0
         return self._get_obs_history(), reward, done, info
 
@@ -254,6 +255,7 @@ class NaoEnv(gym.Env):
             p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
 
         self.t = 0
+        self.speed = 1.0 # np.random.choice([0.75, 1.0, 1.5])
         self.obs_history = []
         return self._get_obs_history()
 
