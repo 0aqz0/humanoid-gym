@@ -136,7 +136,7 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.joint_angles[self.t]) + np.array(actions)
+        actions = np.array(self.joint_angles[self.t]) + np.array(actions) + np.clip(0.1*np.random.randn(len(self.joint_names)), -0.1, 0.1)
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
