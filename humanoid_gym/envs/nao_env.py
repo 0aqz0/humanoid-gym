@@ -34,7 +34,7 @@ class NaoEnv(gym.Env):
         # self.joint_pos = linear_interpolate(self.joint_pos)
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
-        self.speed = 1.0 # np.random.choice([0.75, 1.0, 1.5])
+        self.speed = np.random.choice([0.75, 1.0, 1.5])
 
         self.simulation_manager = SimulationManager()
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
@@ -255,7 +255,7 @@ class NaoEnv(gym.Env):
             p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
 
         self.t = 0
-        self.speed = 1.0 # np.random.choice([0.75, 1.0, 1.5])
+        self.speed = np.random.choice([0.75, 1.0, 1.5])
         self.obs_history = []
         return self._get_obs_history()
 
