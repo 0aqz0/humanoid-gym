@@ -78,27 +78,9 @@ class NaoEnv(gym.Env):
 
     def _get_obs(self):
         # get root transform matrix
-        root_translation, root_quaternion = self.robot.getLinkPosition("torso")
-        root_transform = np.eye(4)
-        root_transform[:3, :3] = R.from_quat(root_quaternion).as_matrix()
-        root_transform[:3, 3] = root_translation
-        # get local position & rotation
-        link_translations = []
-        link_quaternions = []
-        for name in self.link_names:
-            translation, quaternion = self.robot.getLinkPosition(name)
-            transform = np.eye(4)
-            transform[:3, :3] = R.from_quat(quaternion).as_matrix()
-            transform[:3, 3] = translation
-            transform = np.linalg.inv(root_transform) @ transform
-            translation = transform[:3, 3]
-            quaternion = R.from_matrix(transform[:3, :3]).as_quat()
-            link_translations.append(translation)
-            link_quaternions.append(quaternion)
+        _, root_quaternion = self.robot.getLinkPosition("torso")
 
-        link_translations = np.concatenate(link_translations, axis=0)
-        link_quaternions = np.concatenate(link_quaternions, axis=0)
-
+        # get foot contact
         l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
         r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
         l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
@@ -110,7 +92,6 @@ class NaoEnv(gym.Env):
                               R.from_quat(root_quaternion).as_euler('xyz'),
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
                               np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
-                              #link_translations, link_quaternions,
                               l_touch_ground, r_touch_ground,
                               #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
                               #self.joint_angles[self.t].flatten()])
@@ -138,22 +119,6 @@ class NaoEnv(gym.Env):
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
-        # trajectory tracking reward
-        # link_translations = []
-        # link_quaternions = []
-        # for name in self.link_names:
-        #     translation, quaternion = self.robot.getLinkPosition(name)
-        #     link_translations.append(translation)
-        #     link_quaternions.append(quaternion)
-        # link_translations = np.stack(link_translations, axis=0)
-        # link_translations -= np.array(self.robot.getLinkPosition("torso")[0])
-        # link_quaternions = np.stack(link_quaternions, axis=0)
-        # t = 0
-        # pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
-        # current_angles = []
-        # for joint_name in self.joint_names:
-        #     current_angles.append(self.robot.getAnglesPosition(joint_name))
-        # pose_cost = 0 # 10*((self.joint_angles[self.t] - np.array(actions))**2).mean()
 
         # row pitch tracking reward
         _, root_quaternion = self.robot.getLinkPosition("torso")
