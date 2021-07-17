@@ -81,13 +81,22 @@ class NaoEnv(gym.Env):
         _, root_quaternion = self.robot.getLinkPosition("torso")
 
         # get foot contact
-        l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
-        r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
-        l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
-        r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
-        l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
-        r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
+        # l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
+        # r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
+        LFsrFL_pos, _ = self.robot.getLinkPosition("LFsrFL_frame")
+        LFsrFR_pos, _ = self.robot.getLinkPosition("LFsrFR_frame")
+        LFsrRL_pos, _ = self.robot.getLinkPosition("LFsrRL_frame")
+        LFsrRR_pos, _ = self.robot.getLinkPosition("LFsrRR_frame")
+        RFsrFL_pos, _ = self.robot.getLinkPosition("RFsrFL_frame")
+        RFsrFR_pos, _ = self.robot.getLinkPosition("RFsrFR_frame")
+        RFsrRL_pos, _ = self.robot.getLinkPosition("RFsrRL_frame")
+        RFsrRR_pos, _ = self.robot.getLinkPosition("RFsrRR_frame")
+        l_touch_ground = np.array([LFsrFL_pos[2] < 0.01 or LFsrFR_pos[2] < 0.01 or LFsrRL_pos[2] < 0.01 or LFsrRR_pos[2] < 0.01], dtype=int)
+        r_touch_ground = np.array([RFsrFL_pos[2] < 0.01 or RFsrFR_pos[2] < 0.01 or RFsrRL_pos[2] < 0.01 or RFsrRR_pos[2] < 0.01], dtype=int)
+        # l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
+        # r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         # print(l_foot_fsr, r_foot_fsr)
+        # print(l_touch_ground, r_touch_ground)
         noise = 0.2 / 180 * np.pi
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               R.from_quat(root_quaternion).as_euler('xyz'),
