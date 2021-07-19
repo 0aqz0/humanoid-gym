@@ -70,6 +70,7 @@ class NaoEnv(gym.Env):
             self.link_mass[name] = dynamics_info[0]
             self.mass_center[name] = dynamics_info[3]
 
+        self.last_joint_angles = np.array(self.robot.getAnglesPosition(self.joint_names))
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*3,), dtype="float32")
@@ -97,15 +98,19 @@ class NaoEnv(gym.Env):
         # r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         # print(l_foot_fsr, r_foot_fsr)
         # print(l_touch_ground, r_touch_ground)
+        joint_velocity = (np.array(self.robot.getAnglesPosition(self.joint_names)) - self.last_joint_angles)*240
+        # print(joint_velocity)
         noise = 0.2 / 180 * np.pi
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               R.from_quat(root_quaternion).as_euler('xyz'),
                               (np.array(self.robot.getAnglesPosition(self.joint_names)) + np.clip(noise*np.random.randn(len(self.joint_names)), -noise, noise))/np.pi,
-                              (np.array(self.robot.getAnglesVelocity(self.joint_names)) + np.clip(noise*np.random.randn(len(self.joint_names)), -noise, noise))/10.0,
+                              joint_velocity/10.0,
+                              #(np.array(self.robot.getAnglesVelocity(self.joint_names)) + np.clip(noise*np.random.randn(len(self.joint_names)), -noise, noise))/10.0,
                               l_touch_ground, r_touch_ground,
                               #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
                               #self.joint_angles[self.t].flatten()])
                               np.array([int(self.t)/self.total_frames])])
+        self.last_joint_angles = np.array(self.robot.getAnglesPosition(self.joint_names))
         return obs
 
     def _get_obs_history(self):
@@ -223,6 +228,7 @@ class NaoEnv(gym.Env):
         self.t = 0
         self.speed = np.random.choice([0.75, 1.0, 1.5])
         self.obs_history = []
+        self.last_joint_angles = np.array(self.robot.getAnglesPosition(self.joint_names))
         return self._get_obs_history()
 
     def render(self, mode='human'):
