@@ -34,15 +34,22 @@ class NaoEnv(gym.Env):
         # self.joint_pos = linear_interpolate(self.joint_pos)
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
-        self.speed = 1.0  # np.random.choice([0.75, 1.0, 1.5])
 
         self.simulation_manager = SimulationManager()
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-        p.setTimeStep(1/100.)
 
-        # joint parameters
+        # change friction
+        # dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
+        # print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
+        # dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
+        # print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
+        # self.friction = 1.0
+        # p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
+        # p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
+        # p.changeVisualShape(self.robot.getRobotModel(), self.robot.link_dict['l_ankle'].getIndex(), rgbaColor=(255,0,0,1))
+
         self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
@@ -79,36 +86,43 @@ class NaoEnv(gym.Env):
 
     def _get_obs(self):
         # get root transform matrix
-        _, root_quaternion = self.robot.getLinkPosition("torso")
+        root_translation, root_quaternion = self.robot.getLinkPosition("torso")
+        root_transform = np.eye(4)
+        root_transform[:3, :3] = R.from_quat(root_quaternion).as_matrix()
+        root_transform[:3, 3] = root_translation
+        # get local position & rotation
+        link_translations = []
+        link_quaternions = []
+        for name in self.link_names:
+            translation, quaternion = self.robot.getLinkPosition(name)
+            transform = np.eye(4)
+            transform[:3, :3] = R.from_quat(quaternion).as_matrix()
+            transform[:3, 3] = translation
+            transform = np.linalg.inv(root_transform) @ transform
+            translation = transform[:3, 3]
+            quaternion = R.from_matrix(transform[:3, :3]).as_quat()
+            link_translations.append(translation)
+            link_quaternions.append(quaternion)
 
-        # get foot contact
+        link_translations = np.concatenate(link_translations, axis=0)
+        link_quaternions = np.concatenate(link_quaternions, axis=0)
+
         l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
         r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
         l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
         r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
-        # LFsrFL_pos, _ = self.robot.getLinkPosition("LFsrFL_frame")
-        # LFsrFR_pos, _ = self.robot.getLinkPosition("LFsrFR_frame")
-        # LFsrRL_pos, _ = self.robot.getLinkPosition("LFsrRL_frame")
-        # LFsrRR_pos, _ = self.robot.getLinkPosition("LFsrRR_frame")
-        # RFsrFL_pos, _ = self.robot.getLinkPosition("RFsrFL_frame")
-        # RFsrFR_pos, _ = self.robot.getLinkPosition("RFsrFR_frame")
-        # RFsrRL_pos, _ = self.robot.getLinkPosition("RFsrRL_frame")
-        # RFsrRR_pos, _ = self.robot.getLinkPosition("RFsrRR_frame")
-        # l_touch_ground = np.array([LFsrFL_pos[2] < 0.01 or LFsrFR_pos[2] < 0.01 or LFsrRL_pos[2] < 0.01 or LFsrRR_pos[2] < 0.01], dtype=int)
-        # r_touch_ground = np.array([RFsrFL_pos[2] < 0.01 or RFsrFR_pos[2] < 0.01 or RFsrRL_pos[2] < 0.01 or RFsrRR_pos[2] < 0.01], dtype=int)
-        # l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
-        # r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
+        l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
+        r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         # print(l_foot_fsr, r_foot_fsr)
-        # print(l_touch_ground, r_touch_ground)
-        noise = 0.2 / 180 * np.pi
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               R.from_quat(root_quaternion).as_euler('xyz'),
-                              (np.array(self.robot.getAnglesPosition(self.joint_names)) + np.clip(noise*np.random.randn(len(self.joint_names)), -noise, noise))/np.pi,
-                              (np.array(self.robot.getAnglesVelocity(self.joint_names)) + np.clip(noise*np.random.randn(len(self.joint_names)), -noise, noise))/10.0,
+                              np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
+                              np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
+                              #link_translations, link_quaternions,
                               l_touch_ground, r_touch_ground,
                               #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
                               #self.joint_angles[self.t].flatten()])
-                              np.array([int(self.t)/self.total_frames])])
+                              np.array([self.t/self.total_frames])])
         return obs
 
     def _get_obs_history(self):
@@ -122,7 +136,7 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.joint_angles[int(self.t)]) + np.array(actions)
+        actions = np.array(self.joint_angles[self.t]) + np.array(actions) + np.clip(0.1*np.random.randn(len(self.joint_names)), -0.1, 0.1)
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
@@ -132,6 +146,22 @@ class NaoEnv(gym.Env):
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
+        # trajectory tracking reward
+        # link_translations = []
+        # link_quaternions = []
+        # for name in self.link_names:
+        #     translation, quaternion = self.robot.getLinkPosition(name)
+        #     link_translations.append(translation)
+        #     link_quaternions.append(quaternion)
+        # link_translations = np.stack(link_translations, axis=0)
+        # link_translations -= np.array(self.robot.getLinkPosition("torso")[0])
+        # link_quaternions = np.stack(link_quaternions, axis=0)
+        # t = 0
+        # pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
+        # current_angles = []
+        # for joint_name in self.joint_names:
+        #     current_angles.append(self.robot.getAnglesPosition(joint_name))
+        # pose_cost = 0 # 10*((self.joint_angles[self.t] - np.array(actions))**2).mean()
 
         # row pitch tracking reward
         _, root_quaternion = self.robot.getLinkPosition("torso")
@@ -150,14 +180,14 @@ class NaoEnv(gym.Env):
         l_transform[:3, 3] = l_ankle_pos
         l_transform = np.linalg.inv(root_transform) @ l_transform
         l_translation = l_transform[:3, 3]
-        l_reference = self.joint_pos[int(self.t), 20]
+        l_reference = self.joint_pos[self.t, 20]
         r_ankle_pos, r_ankle_quat = self.robot.getLinkPosition("r_ankle")
         r_transform = np.eye(4)
         r_transform[:3, :3] = R.from_quat(r_ankle_quat).as_matrix()
         r_transform[:3, 3] = r_ankle_pos
         r_transform = np.linalg.inv(root_transform) @ r_transform
         r_translation = r_transform[:3, 3]
-        r_reference = self.joint_pos[int(self.t), 26]
+        r_reference = self.joint_pos[self.t, 26]
         # print(l_translation, l_reference, r_translation, r_reference)
         foot_tracking_cost = 1.0 * (np.square(l_translation - l_reference).sum() + np.square(r_translation - r_reference).sum())
 
@@ -206,8 +236,8 @@ class NaoEnv(gym.Env):
                 'lin_vel_cost': lin_vel_cost, 'quad_ctrl_cost': quad_ctrl_cost,
                 'quad_impact_cost': quad_impact_cost, 'alive_bonus': alive_bonus}
         # print(self._get_obs())
-        self.t += self.speed
-        if self.t >= self.total_frames:
+        self.t += 1
+        if self.t == self.total_frames:
             self.t = 0
         return self._get_obs_history(), reward, done, info
 
@@ -224,7 +254,6 @@ class NaoEnv(gym.Env):
             p.changeDynamics(self.robot.getRobotModel(), link.getIndex(), mass=self.link_mass[name]*random.uniform(0.75, 1.15))
 
         self.t = 0
-        self.speed = 1.0  # np.random.choice([0.75, 1.0, 1.5])
         self.obs_history = []
         return self._get_obs_history()
 
