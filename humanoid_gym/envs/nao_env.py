@@ -5,20 +5,12 @@ import pybullet as p
 import numpy as np
 from qibullet import SimulationManager
 from qibullet import NaoVirtual
+from qibullet.robot_posture import NaoPosture
 import time
 import h5py
 import random
 from scipy.spatial.transform import Rotation as R
 
-def linear_interpolate(data):
-    total_frames = data.shape[0]
-    new_data = []
-    for t in range(2*total_frames-1):
-        if t % 2 == 0:
-            new_data.append(data[t//2])
-        else:
-            new_data.append((data[t//2] + data[t//2])/2)
-    return np.stack(new_data, axis=0)
 
 class NaoEnv(gym.Env):
     """docstring for NaoEnv"""
@@ -29,9 +21,7 @@ class NaoEnv(gym.Env):
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
         self.joint_angles = group1.get('joint_angle')[4:-65, 1:]
-        # self.joint_angles = linear_interpolate(self.joint_angles)
         self.joint_pos = group1.get('joint_pos')[4:-65]
-        # self.joint_pos = linear_interpolate(self.joint_pos)
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -40,16 +30,13 @@ class NaoEnv(gym.Env):
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
 
-        # change friction
-        # dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
-        # print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
-        # dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
-        # print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
-        # self.friction = 1.0
-        # p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
-        # p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
-        # p.changeVisualShape(self.robot.getRobotModel(), self.robot.link_dict['l_ankle'].getIndex(), rgbaColor=(255,0,0,1))
+        # stand pose parameters
+        pose = NaoPosture('Stand')
+        pose_dict = {}
+        for joint_name, joint_value in zip(pose.joint_names, pose.joint_values):
+            pose_dict[joint_name] = joint_value
 
+        # joint parameters
         self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
@@ -58,7 +45,7 @@ class NaoEnv(gym.Env):
             joint = self.robot.joint_dict[joint_name]
             self.lower_limits.append(joint.getLowerLimit())
             self.upper_limits.append(joint.getUpperLimit())
-            self.init_angles.append(self.robot.getAnglesPosition(joint_name))
+            self.init_angles.append(pose_dict[joint_name])
         self.link_names = []
         for joint_name in self.joint_names:
             linkName = p.getJointInfo(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())[12].decode("utf-8")
@@ -146,80 +133,6 @@ class NaoEnv(gym.Env):
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
-        # trajectory tracking reward
-        # link_translations = []
-        # link_quaternions = []
-        # for name in self.link_names:
-        #     translation, quaternion = self.robot.getLinkPosition(name)
-        #     link_translations.append(translation)
-        #     link_quaternions.append(quaternion)
-        # link_translations = np.stack(link_translations, axis=0)
-        # link_translations -= np.array(self.robot.getLinkPosition("torso")[0])
-        # link_quaternions = np.stack(link_quaternions, axis=0)
-        # t = 0
-        # pose_cost = np.square(np.linalg.norm(link_translations - joint_pos[t, 1:], axis=1)).sum()
-        # current_angles = []
-        # for joint_name in self.joint_names:
-        #     current_angles.append(self.robot.getAnglesPosition(joint_name))
-        # pose_cost = 0 # 10*((self.joint_angles[self.t] - np.array(actions))**2).mean()
-
-        # row pitch tracking reward
-        _, root_quaternion = self.robot.getLinkPosition("torso")
-        root_rpy = R.from_quat(root_quaternion).as_euler("xyz", degrees=True)
-        hip_rpy = [180, 0, 0]  # self.hip_rpy[self.t]
-        rp_tracking_cost = 0.001 * np.square(np.array(root_rpy[1:]) - np.array(hip_rpy[1:])).sum()
-
-        # foot position tracking reward
-        root_translation, root_quaternion = self.robot.getLinkPosition("torso")
-        root_transform = np.eye(4)
-        root_transform[:3, :3] = R.from_quat(root_quaternion).as_matrix()
-        root_transform[:3, 3] = root_translation
-        l_ankle_pos, l_ankle_quat = self.robot.getLinkPosition("l_ankle")
-        l_transform = np.eye(4)
-        l_transform[:3, :3] = R.from_quat(l_ankle_quat).as_matrix()
-        l_transform[:3, 3] = l_ankle_pos
-        l_transform = np.linalg.inv(root_transform) @ l_transform
-        l_translation = l_transform[:3, 3]
-        l_reference = self.joint_pos[self.t, 20]
-        r_ankle_pos, r_ankle_quat = self.robot.getLinkPosition("r_ankle")
-        r_transform = np.eye(4)
-        r_transform[:3, :3] = R.from_quat(r_ankle_quat).as_matrix()
-        r_transform[:3, 3] = r_ankle_pos
-        r_transform = np.linalg.inv(root_transform) @ r_transform
-        r_translation = r_transform[:3, 3]
-        r_reference = self.joint_pos[self.t, 26]
-        # print(l_translation, l_reference, r_translation, r_reference)
-        foot_tracking_cost = 1.0 * (np.square(l_translation - l_reference).sum() + np.square(r_translation - r_reference).sum())
-
-        # zmp reward
-        from shapely.geometry import Point
-        from shapely.geometry.polygon import Polygon
-        l_sole_pos, l_sole_quat = self.robot.getLinkPosition("l_sole")
-        l_sole_matrix = R.from_quat(l_sole_quat).as_matrix()
-        l_p1 = l_sole_pos + l_sole_matrix @ [-0.06, 0.05, 0]
-        l_p2 = l_sole_pos + l_sole_matrix @ [0.1, 0.05, 0]
-        l_p3 = l_sole_pos + l_sole_matrix @ [-0.06, -0.04, 0]
-        l_p4 = l_sole_pos + l_sole_matrix @ [0.1, -0.04, 0]
-        # p.addUserDebugLine(l_p1, l_p2)
-        # p.addUserDebugLine(l_p3, l_p4)
-        # p.addUserDebugLine(l_p1, l_p3)
-        # p.addUserDebugLine(l_p2, l_p4)
-        l_polygon = Polygon([l_p1[:2], l_p2[:2], l_p3[:2], l_p4[:2]])
-        r_sole_pos, r_sole_quat = self.robot.getLinkPosition("r_sole")
-        r_sole_matrix = R.from_quat(r_sole_quat).as_matrix()
-        r_p1 = r_sole_pos + r_sole_matrix @ [-0.06, -0.05, 0]
-        r_p2 = r_sole_pos + r_sole_matrix @ [0.1, -0.05, 0]
-        r_p3 = r_sole_pos + r_sole_matrix @ [-0.06, 0.04, 0]
-        r_p4 = r_sole_pos + r_sole_matrix @ [0.1, 0.04, 0]
-        # p.addUserDebugLine(r_p1, r_p2)
-        # p.addUserDebugLine(r_p3, r_p4)
-        # p.addUserDebugLine(r_p1, r_p3)
-        # p.addUserDebugLine(r_p2, r_p4)
-        r_polygon = Polygon([r_p1[:2], r_p2[:2], r_p3[:2], r_p4[:2]])
-        m_polygon = Polygon([l_p3[:2], l_p4[:2], r_p3[:2], r_p4[:2]])
-        root_translation, _ = self.robot.getLinkPosition("torso")
-        root_point = Point(root_translation[:2])
-        zmp_cost = 0.5 if l_polygon.contains(root_point) or r_polygon.contains(root_point) or m_polygon.contains(root_point) else 0.0
 
         lin_vel_cost = 4 * 125 * (pos_after[0] - pos_before[0])
         quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
@@ -231,8 +144,8 @@ class NaoEnv(gym.Env):
         # reward += zmp_cost
         torso_height = self.robot.getLinkPosition("torso")[0][2]
         done = torso_height < 0.28 or torso_height > 0.4
-        info = {'alive_bonus': alive_bonus, 'rp_tracking_cost': rp_tracking_cost,
-                'foot_tracking_cost': foot_tracking_cost, 'zmp_cost': zmp_cost,
+        info = {'alive_bonus': alive_bonus, 'rp_tracking_cost': 0,
+                'foot_tracking_cost': 0, 'zmp_cost': 0,
                 'lin_vel_cost': lin_vel_cost, 'quad_ctrl_cost': quad_ctrl_cost,
                 'quad_impact_cost': quad_impact_cost, 'alive_bonus': alive_bonus}
         # print(self._get_obs())
