@@ -29,6 +29,7 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
+        p.setTimeStep(1./100.)
 
         # stand pose parameters
         pose = NaoPosture('Stand')
