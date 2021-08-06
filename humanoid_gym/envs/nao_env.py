@@ -20,8 +20,8 @@ class NaoEnv(gym.Env):
         file = 'inference.h5'
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:-65, 1:]
-        self.joint_pos = group1.get('joint_pos')[4:-65]
+        self.joint_angles = group1.get('joint_angle')[4:-65:2, 1:]
+        self.joint_pos = group1.get('joint_pos')[4:-65:2]
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -29,7 +29,7 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-        p.setTimeStep(1./100.)
+        p.setTimeStep(1./120.)
 
         # stand pose parameters
         pose = NaoPosture('Stand')
@@ -125,6 +125,15 @@ class NaoEnv(gym.Env):
         pos_before = self.robot.getPosition()
 
         actions = np.array(self.joint_angles[self.t]) + np.array(actions) + np.clip(0.1*np.random.randn(len(self.joint_names)), -0.1, 0.1)
+
+        # clipping
+        current_angles = []
+        for joint_name in self.joint_names:
+            joint_state = p.getJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())
+            current_angles.append(joint_state[0])
+        current_angles = np.array(current_angles)
+        actions = np.clip(actions, a_min=current_angles-0.3, a_max=current_angles+0.3)
+
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
@@ -140,15 +149,12 @@ class NaoEnv(gym.Env):
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
-        # reward -= rp_tracking_cost
-        # reward -= foot_tracking_cost
-        # reward += zmp_cost
         torso_height = self.robot.getLinkPosition("torso")[0][2]
         done = torso_height < 0.28 or torso_height > 0.4
-        info = {'alive_bonus': alive_bonus, 'rp_tracking_cost': 0,
-                'foot_tracking_cost': 0, 'zmp_cost': 0,
-                'lin_vel_cost': lin_vel_cost, 'quad_ctrl_cost': quad_ctrl_cost,
-                'quad_impact_cost': quad_impact_cost, 'alive_bonus': alive_bonus}
+        info = {'alive_bonus': alive_bonus, 'lin_vel_cost': lin_vel_cost,
+            'quad_ctrl_cost': quad_ctrl_cost, 'quad_impact_cost': quad_impact_cost,
+            'alive_bonus': alive_bonus, 'action': np.array(self.joint_angles[self.t]),
+            'delta_action': np.array(actions) - np.array(self.joint_angles[self.t])}
         # print(self._get_obs())
         self.t += 1
         if self.t == self.total_frames:
