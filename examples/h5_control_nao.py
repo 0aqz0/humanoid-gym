@@ -19,7 +19,7 @@ while True:
     env.render()
 
     for t in range(total_frames):
-        action = l_joint_angle[t].tolist() + r_joint_angle[t].tolist()
+        action = l_joint_angle[t].tolist() + [1] + r_joint_angle[t].tolist() + [1]
         print(t, action)
         observation, reward, done, info = env.step(action)
         time.sleep(0.1)

@@ -30,11 +30,13 @@ class PepperEnv(gym.Env):
                             'LElbowYaw',
                             'LElbowRoll',
                             'LWristYaw',
+                            'LHand',
                             'RShoulderPitch',
                             'RShoulderRoll',
                             'RElbowYaw',
                             'RElbowRoll',
-                            'RWristYaw']
+                            'RWristYaw',
+                            'RHand']
         self.lower_limits = []
         self.upper_limits = []
         self.init_angles = []
