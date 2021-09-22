@@ -5,6 +5,7 @@ import pybullet as p
 import numpy as np
 from qibullet import SimulationManager
 from qibullet import PepperVirtual
+from qibullet.robot_posture import PepperPosture
 import time
 
 class PepperEnv(gym.Env):
@@ -17,26 +18,45 @@ class PepperEnv(gym.Env):
         self.robot = self.simulation_manager.spawnPepper(self.client, spawn_ground_plane=True)
         time.sleep(1.0)
 
-        self.joint_names = []
+        # stand pose parameters
+        pose = PepperPosture('Stand')
+        pose_dict = {}
+        for joint_name, joint_value in zip(pose.joint_names, pose.joint_values):
+            pose_dict[joint_name] = joint_value
+
+        # joint parameters
+        self.joint_names = ['LShoulderPitch',
+                            'LShoulderRoll',
+                            'LElbowYaw',
+                            'LElbowRoll',
+                            'LWristYaw',
+                            'RShoulderPitch',
+                            'RShoulderRoll',
+                            'RElbowYaw',
+                            'RElbowRoll',
+                            'RWristYaw']
         self.lower_limits = []
         self.upper_limits = []
         self.init_angles = []
-        for name, joint in self.robot.joint_dict.items():
-            if "Finger" not in name and "Thumb" not in name:
-                self.joint_names.append(name)
-                self.lower_limits.append(joint.getLowerLimit())
-                self.upper_limits.append(joint.getUpperLimit())
-                self.init_angles.append(self.robot.getAnglesPosition(name))
+        for joint_name in self.joint_names:
+            joint = self.robot.joint_dict[joint_name]
+            self.lower_limits.append(joint.getLowerLimit())
+            self.upper_limits.append(joint.getUpperLimit())
+            self.init_angles.append(pose_dict[joint_name])
+        self.link_names = []
+        for joint_name in self.joint_names:
+            linkName = p.getJointInfo(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex())[12].decode("utf-8")
+            self.link_names.append(linkName)
+
         self.action_space = spaces.Box(np.array([-1]*3 + self.lower_limits), np.array([1]*3 + self.upper_limits))
         self.observation_space = spaces.Box(np.array([-1]*len(self.joint_names)), np.array([1]*len(self.joint_names)))
 
     def step(self, actions):
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
-        # set robot move speed
-        self.robot.move(actions[0], actions[1], actions[2])
+
         # set joint angles
-        self.robot.setAngles(self.joint_names, actions[3:], 1.0)
+        self.robot.setAngles(self.joint_names, actions, 1.0)
 
         # get observations
         observation = {
