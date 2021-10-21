@@ -20,7 +20,8 @@ class NaoEnv(gym.Env):
         file = 'inference.h5'
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:-65:2, 1:]
+        self.joint_angles = group1.get('joint_angle')[4:-65:2, 3:]
+        self.joint_angles = np.concatenate([self.joint_angles[:, :5], self.joint_angles[:, 6:11], self.joint_angles[:, 12:]], axis=1)
         self.joint_pos = group1.get('joint_pos')[4:-65:2]
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
@@ -38,7 +39,7 @@ class NaoEnv(gym.Env):
             pose_dict[joint_name] = joint_value
 
         # joint parameters
-        self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
+        self.joint_names = ['LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
         self.init_angles = []
