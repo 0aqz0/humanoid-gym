@@ -30,7 +30,7 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=True, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-        p.setTimeStep(1./180.)
+        p.setTimeStep(1./120.)
 
         # stand pose parameters
         pose = NaoPosture('Stand')
@@ -68,9 +68,10 @@ class NaoEnv(gym.Env):
             self.mass_center[name] = dynamics_info[3]
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
-        self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
-        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*3,), dtype="float32")
         self.obs_history = []
+        self.obs_length = 3
+        self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
+        self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*self.obs_length,), dtype="float32")
         self._max_episode_steps = 1000  # float('inf')
 
     def _get_obs(self):
@@ -116,10 +117,10 @@ class NaoEnv(gym.Env):
 
     def _get_obs_history(self):
         self.obs_history.append(self._get_obs())
-        if len(self.obs_history) < 3:
-            concat_obs = np.concatenate([self.obs_history[-1]]*3, axis=0)
+        if len(self.obs_history) < self.obs_length:
+            concat_obs = np.concatenate([self.obs_history[-1]]*self.obs_length, axis=0)
         else:
-            concat_obs = np.concatenate(self.obs_history[-3:], axis=0)
+            concat_obs = np.concatenate(self.obs_history[-self.obs_length:], axis=0)
         return concat_obs
 
     def step(self, actions):
