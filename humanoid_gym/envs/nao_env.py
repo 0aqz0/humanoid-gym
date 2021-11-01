@@ -69,7 +69,7 @@ class NaoEnv(gym.Env):
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.obs_history = []
-        self.obs_length = 3
+        self.obs_length = 10
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*self.obs_length,), dtype="float32")
         self._max_episode_steps = 1000  # float('inf')
@@ -104,12 +104,20 @@ class NaoEnv(gym.Env):
         l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
         r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         # print(l_foot_fsr, r_foot_fsr)
+        fsr_values = self.robot.getFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame",
+                                              "RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
+        # visualize rotation vector
+        # for axis in [[1, 0, 0]]:#, [0, 1, 0], [0, 0, 1]]:
+        #     arrow = root_translation + R.from_quat(root_quaternion).as_matrix() @ np.array(axis)
+        #     p.addUserDebugLine(root_translation, arrow, lineColorRGB=axis, lineWidth=1, lifeTime=0.1)
+
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               R.from_quat(root_quaternion).as_euler('xyz'),
                               np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
-                              np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
+                              #np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
                               #link_translations, link_quaternions,
-                              l_touch_ground, r_touch_ground,
+                              #l_touch_ground, r_touch_ground,
+                              np.array(fsr_values) == 0,
                               #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
                               #self.joint_angles[self.t].flatten()])
                               np.array([self.t/self.total_frames])])
