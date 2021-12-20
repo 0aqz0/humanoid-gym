@@ -17,12 +17,13 @@ class NaoEnv(gym.Env):
     def __init__(self):
         super(NaoEnv, self).__init__()
         # read imitation results
-        file = 'inference.h5'
+        file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference.h5'))
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:-65:2, 3:]
+        self.joint_angles = group1.get('joint_angle')[4:-65, 3:]
         self.joint_angles = np.concatenate([self.joint_angles[:, :5], self.joint_angles[:, 6:11], self.joint_angles[:, 12:]], axis=1)
-        self.joint_pos = group1.get('joint_pos')[4:-65:2]
+        self.joint_angles[:, -6] = self.joint_angles[:, 10]
+        self.joint_angles = self.joint_angles[:, -12:]
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -39,7 +40,8 @@ class NaoEnv(gym.Env):
             pose_dict[joint_name] = joint_value
 
         # joint parameters
-        self.joint_names = ['LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
+        # self.joint_names = ['LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
+        self.joint_names = ['LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
         self.init_angles = []
@@ -69,72 +71,45 @@ class NaoEnv(gym.Env):
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.obs_history = []
-        self.obs_length = 10
+        self.obs_length = 3
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*self.obs_length,), dtype="float32")
         self._max_episode_steps = 1000  # float('inf')
 
     def _get_obs(self):
         # get root transform matrix
-        root_translation, root_quaternion = self.robot.getLinkPosition("torso")
-        root_transform = np.eye(4)
-        root_transform[:3, :3] = R.from_quat(root_quaternion).as_matrix()
-        root_transform[:3, 3] = root_translation
-        # get local position & rotation
-        link_translations = []
-        link_quaternions = []
-        for name in self.link_names:
-            translation, quaternion = self.robot.getLinkPosition(name)
-            transform = np.eye(4)
-            transform[:3, :3] = R.from_quat(quaternion).as_matrix()
-            transform[:3, 3] = translation
-            transform = np.linalg.inv(root_transform) @ transform
-            translation = transform[:3, 3]
-            quaternion = R.from_matrix(transform[:3, :3]).as_quat()
-            link_translations.append(translation)
-            link_quaternions.append(quaternion)
-
-        link_translations = np.concatenate(link_translations, axis=0)
-        link_quaternions = np.concatenate(link_quaternions, axis=0)
-
-        l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
-        r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
-        l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
-        r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
-        l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
-        r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
+        _, root_quaternion = self.robot.getLinkPosition("torso")
+        # l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
+        # r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
+        # l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
+        # r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
+        # l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
+        # r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         # print(l_foot_fsr, r_foot_fsr)
         fsr_values = self.robot.getFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame",
                                               "RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
-        # visualize rotation vector
-        # for axis in [[1, 0, 0]]:#, [0, 1, 0], [0, 0, 1]]:
-        #     arrow = root_translation + R.from_quat(root_quaternion).as_matrix() @ np.array(axis)
-        #     p.addUserDebugLine(root_translation, arrow, lineColorRGB=axis, lineWidth=1, lifeTime=0.1)
-
+        fsr_values = (np.array(fsr_values) == 0)
+        angles = np.array(self.robot.getAnglesPosition(self.joint_names)) + np.clip(0.1*np.random.randn(len(self.joint_names)), -0.1, 0.1)
         obs = np.concatenate([#np.array(self.robot.getPosition())/10.0,
                               R.from_quat(root_quaternion).as_euler('xyz'),
-                              np.array(self.robot.getAnglesPosition(self.joint_names))/np.pi,
-                              #np.array(self.robot.getAnglesVelocity(self.joint_names))/10.0,
-                              #link_translations, link_quaternions,
+                              angles,
                               #l_touch_ground, r_touch_ground,
-                              np.array(fsr_values) == 0,
-                              #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
-                              #self.joint_angles[self.t].flatten()])
+                              fsr_values,
                               np.array([self.t/self.total_frames])])
         return obs
 
     def _get_obs_history(self):
         self.obs_history.append(self._get_obs())
-        if len(self.obs_history) < self.obs_length:
+        if len(self.obs_history) < 10:
             concat_obs = np.concatenate([self.obs_history[-1]]*self.obs_length, axis=0)
         else:
-            concat_obs = np.concatenate(self.obs_history[-self.obs_length:], axis=0)
+            concat_obs = np.concatenate([self.obs_history[-1], self.obs_history[-5], self.obs_history[-9]], axis=0)
         return concat_obs
 
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.joint_angles[self.t]) + np.array(actions) + np.clip(0.1*np.random.randn(len(self.joint_names)), -0.1, 0.1)
+        actions = np.array(self.joint_angles[int(self.t)]) + np.array(actions)
 
         # clipping
         current_angles = []
@@ -147,8 +122,8 @@ class NaoEnv(gym.Env):
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
-        
-        self.robot.setAngles(self.joint_names, actions, 1.0)
+
+        self.robot.setAngles(self.joint_names, actions, 0.2)
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
@@ -160,13 +135,17 @@ class NaoEnv(gym.Env):
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
         torso_height = self.robot.getLinkPosition("torso")[0][2]
-        done = torso_height < 0.28 or torso_height > 0.4
+        walking_dist = np.linalg.norm(self.robot.getLinkPosition("torso")[0][:2])
+        p.addUserDebugText('Walking Distance: {:.2f} m'.format(walking_dist), np.array(self.robot.getLinkPosition("torso")[0]) + np.array([0, 0, 0.5]),
+            textColorRGB=[0, 0, 1], textSize=3, lifeTime=0.1)
+        # following view
+        # p.resetDebugVisualizerCamera(cameraDistance=1.5, cameraYaw=90, cameraPitch=-20, cameraTargetPosition=self.robot.getLinkPosition("torso")[0])
+        done = torso_height < 0.28 or torso_height > 0.4 or walking_dist > 100
         info = {'alive_bonus': alive_bonus, 'lin_vel_cost': lin_vel_cost,
             'quad_ctrl_cost': quad_ctrl_cost, 'quad_impact_cost': quad_impact_cost,
-            'alive_bonus': alive_bonus, 'action': np.array(self.joint_angles[self.t]),
-            'delta_action': np.array(actions) - np.array(self.joint_angles[self.t])}
+            'alive_bonus': alive_bonus}
         # print(self._get_obs())
-        self.t += 1
+        self.t += 0.5
         if self.t == self.total_frames:
             self.t = 0
         return self._get_obs_history(), reward, done, info
@@ -186,29 +165,6 @@ class NaoEnv(gym.Env):
         self.t = 0
         self.obs_history = []
         return self._get_obs_history()
-
-    def render(self, mode='human'):
-        view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition=[0.5,0,0.5],
-                                                          distance=.7,
-                                                          yaw=90,
-                                                          pitch=0,
-                                                          roll=0,
-                                                          upAxisIndex=2)
-        proj_matrix = p.computeProjectionMatrixFOV(fov=60,
-                                                   aspect=float(960)/720,
-                                                   nearVal=0.1,
-                                                   farVal=100.0)
-        (_, _, px, _, _) = p.getCameraImage(width=960,
-                                            height=720,
-                                            viewMatrix=view_matrix,
-                                            projectionMatrix=proj_matrix,
-                                            renderer=p.ER_BULLET_HARDWARE_OPENGL)
-
-        rgb_array = np.array(px, dtype=np.uint8)
-        rgb_array = np.reshape(rgb_array, (720,960,4))
-
-        rgb_array = rgb_array[:, :, :3]
-        return rgb_array
 
     def close(self):
         p.disconnect()
