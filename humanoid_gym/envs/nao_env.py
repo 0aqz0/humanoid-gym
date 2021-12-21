@@ -62,12 +62,14 @@ class NaoEnv(gym.Env):
         r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
         l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
         r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
+        fsr_values = self.robot.getFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame",
+                                              "RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
+        fsr_values = (np.array(fsr_values) == 0)
         # print(l_foot_fsr, r_foot_fsr)
         obs = np.concatenate([root_quaternion,
                               np.array(self.robot.getAnglesPosition(self.joint_names)),
                               np.array(self.robot.getAnglesVelocity(self.joint_names)),
-                              l_touch_ground, r_touch_ground,
-                              #np.array([l_foot_fsr]), np.array([r_foot_fsr]),
+                              fsr_values,
                               self.joint_angles[self.t].flatten()])
         return obs
 
