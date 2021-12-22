@@ -17,7 +17,7 @@ class NaoEnv(gym.Env):
         file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference.h5'))
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:-65, 1:]
+        self.joint_angles = group1.get('joint_angle')[4:-65, -12:]
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -35,7 +35,8 @@ class NaoEnv(gym.Env):
         p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
         p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
 
-        self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
+        # self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
+        self.joint_names = ['LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
         self.init_angles = []
@@ -70,7 +71,7 @@ class NaoEnv(gym.Env):
                               np.array(self.robot.getAnglesPosition(self.joint_names)),
                               np.array(self.robot.getAnglesVelocity(self.joint_names)),
                               fsr_values,
-                              self.joint_angles[self.t].flatten()])
+                              np.array([self.t/self.total_frames])])
         return obs
 
     def _get_obs_history(self):
@@ -100,7 +101,12 @@ class NaoEnv(gym.Env):
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
         torso_height = self.robot.getLinkPosition("torso")[0][2]
-        done = torso_height < 0.28 or torso_height > 0.4
+        walking_dist = np.linalg.norm(self.robot.getLinkPosition("torso")[0][:2])
+        p.addUserDebugText('Walking Distance: {:.2f} m'.format(walking_dist), np.array(self.robot.getLinkPosition("torso")[0]) + np.array([0, 0, 0.5]),
+            textColorRGB=[0, 0, 1], textSize=3, lifeTime=0.1)
+        # following view
+        # p.resetDebugVisualizerCamera(cameraDistance=1.5, cameraYaw=90, cameraPitch=-20, cameraTargetPosition=self.robot.getLinkPosition("torso")[0])
+        done = torso_height < 0.28 or torso_height > 0.4 or walking_dist > 100
         info = {'alive_bonus': alive_bonus, 'lin_vel_cost': lin_vel_cost,
                 'quad_ctrl_cost': quad_ctrl_cost, 'quad_impact_cost': quad_impact_cost,
                 'alive_bonus': alive_bonus}
