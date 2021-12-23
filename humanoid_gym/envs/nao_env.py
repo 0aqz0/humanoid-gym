@@ -8,6 +8,7 @@ from qibullet import NaoVirtual
 import time
 import h5py
 from scipy.spatial.transform import Rotation as R
+from collections import deque
 
 class NaoEnv(gym.Env):
     """docstring for NaoEnv"""
@@ -48,30 +49,37 @@ class NaoEnv(gym.Env):
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
-        self.obs_history = []
+        self.obs_history = deque(maxlen=100)
         self.obs_length = 3
+        self.ang_history = deque(maxlen=100)
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*self.obs_length,), dtype="float32")
         self._max_episode_steps = 1000
 
     def _get_obs(self):
         # get root transform matrix
         _, root_quaternion = self.robot.getLinkPosition("torso")
-
+        # angles
+        angles = np.array(self.robot.getAnglesPosition(self.joint_names))
+        # velocities
+        # velocities = np.array(self.robot.getAnglesVelocity(self.joint_names))
+        velocities = 120*(angles - self.ang_history[-1]) if len(self.ang_history) > 0 else np.zeros_like(angles)
+        self.ang_history.append(angles)
+        # foot contact
         l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
         r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
         l_touch_ground = np.array([l_sole_pos[2] < 0.01], dtype=int)
         r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
-        l_foot_fsr = self.robot.getTotalFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame"])
-        r_foot_fsr = self.robot.getTotalFsrValues(["RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         fsr_values = self.robot.getFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame",
                                               "RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
         fsr_values = (np.array(fsr_values) == 0)
-        # print(l_foot_fsr, r_foot_fsr)
+        # phase
+        phase = np.array([self.t/self.total_frames])
+        # observation
         obs = np.concatenate([root_quaternion,
-                              np.array(self.robot.getAnglesPosition(self.joint_names)),
-                              np.array(self.robot.getAnglesVelocity(self.joint_names)),
+                              angles,
+                              velocities,
                               fsr_values,
-                              np.array([self.t/self.total_frames])])
+                              phase])
         return obs
 
     def _get_obs_history(self):
