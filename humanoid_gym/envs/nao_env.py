@@ -15,7 +15,7 @@ class NaoEnv(gym.Env):
     def __init__(self, gui=True):
         super(NaoEnv, self).__init__()
         # read imitation results
-        file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference.h5'))
+        file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference-slow.h5'))
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
         self.joint_angles = group1.get('joint_angle')[4:-65, -12:]
@@ -99,6 +99,8 @@ class NaoEnv(gym.Env):
             actions = actions.tolist()
         
         self.robot.setAngles(self.joint_names, actions, 1.0)
+        # step twice to 120 Hz
+        self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
