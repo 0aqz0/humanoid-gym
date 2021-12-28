@@ -93,7 +93,7 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.joint_angles[self.t]) + np.array(actions)
+        actions = np.array(self.joint_angles[int(self.t)]) + np.array(actions)
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
@@ -120,7 +120,7 @@ class NaoEnv(gym.Env):
         info = {'alive_bonus': alive_bonus, 'lin_vel_cost': lin_vel_cost,
                 'quad_ctrl_cost': quad_ctrl_cost, 'quad_impact_cost': quad_impact_cost,
                 'alive_bonus': alive_bonus}
-        self.t += 1
+        self.t += 0.5
         if self.t == self.total_frames:
             self.t = 0
         return self._get_obs_history(), reward, done, info
