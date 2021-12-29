@@ -18,7 +18,7 @@ class NaoEnv(gym.Env):
         file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference-slow.h5'))
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:-65, -12:]
+        self.joint_angles = group1.get('joint_angle')[4:-95, -12:]
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -93,7 +93,9 @@ class NaoEnv(gym.Env):
     def step(self, actions):
         pos_before = self.robot.getPosition()
 
-        actions = np.array(self.joint_angles[int(self.t)]) + np.array(actions)
+        actions = np.array(self.joint_angles[self.t]) + np.array(actions)
+        # LHipYawPitch equals to RHipYawPitch
+        actions[-6] = actions[-12]
         # set joint angles
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
@@ -120,7 +122,7 @@ class NaoEnv(gym.Env):
         info = {'alive_bonus': alive_bonus, 'lin_vel_cost': lin_vel_cost,
                 'quad_ctrl_cost': quad_ctrl_cost, 'quad_impact_cost': quad_impact_cost,
                 'alive_bonus': alive_bonus}
-        self.t += 0.5
+        self.t += 1
         if self.t == self.total_frames:
             self.t = 0
         return self._get_obs_history(), reward, done, info
