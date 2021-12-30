@@ -136,8 +136,14 @@ class NaoEnv(gym.Env):
         pose = NaoPosture('Stand')
         for joint_name, init_angle in zip(pose.joint_names, pose.joint_values):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
+            p.setJointMotorControl2(self.robot.getRobotModel(),
+                                    self.robot.joint_dict[joint_name].getIndex(),
+                                    p.POSITION_CONTROL,
+                                    targetPosition=init_angle)
         for joint_name, init_angle in zip(self.joint_names, self.init_angles):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
+        for _ in range(400):
+            p.stepSimulation()
         self.t = 0
         self.obs_history = []
         return self._get_obs_history()
