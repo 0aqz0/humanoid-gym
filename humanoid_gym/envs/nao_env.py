@@ -5,6 +5,7 @@ import pybullet as p
 import numpy as np
 from qibullet import SimulationManager
 from qibullet import NaoVirtual
+from qibullet.robot_posture import NaoPosture
 import time
 import h5py
 from scipy.spatial.transform import Rotation as R
@@ -15,10 +16,10 @@ class NaoEnv(gym.Env):
     def __init__(self, gui=True):
         super(NaoEnv, self).__init__()
         # read imitation results
-        file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference-slow.h5'))
+        file = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../inference-new.h5'))
         hf = h5py.File(file, 'r')
         group1 = hf.get('group1')
-        self.joint_angles = group1.get('joint_angle')[4:-95, -12:]
+        self.joint_angles = group1.get('joint_angle')[113:286, -12:]
         self.total_frames = self.joint_angles.shape[0]
         self.t = 0
 
@@ -46,6 +47,7 @@ class NaoEnv(gym.Env):
             self.lower_limits.append(joint.getLowerLimit())
             self.upper_limits.append(joint.getUpperLimit())
             self.init_angles.append(self.robot.getAnglesPosition(joint_name))
+        self.init_angles = self.joint_angles[0].tolist()
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
@@ -128,8 +130,12 @@ class NaoEnv(gym.Env):
         return self._get_obs_history(), reward, done, info
 
     def reset(self):
-        p.resetBasePositionAndOrientation(self.robot.getRobotModel(), [0, 0, 0.34], [0, 0, 0, 1])
+        p.resetBasePositionAndOrientation(self.robot.getRobotModel(), [0, 0, 0.33], [0, 0, 0, 1])
         p.resetBaseVelocity(self.robot.getRobotModel(), [0, 0, 0], [0, 0, 0])
+        # stand pose parameters
+        pose = NaoPosture('Stand')
+        for joint_name, init_angle in zip(pose.joint_names, pose.joint_values):
+            p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
         for joint_name, init_angle in zip(self.joint_names, self.init_angles):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
         self.t = 0
