@@ -76,8 +76,14 @@ class NaoEnv(gym.Env):
         fsr_values = (np.array(fsr_values) == 0)
         # phase
         phase = np.array([self.t/self.total_frames])
+        # gyroscope values
+        gyroscope = p.getLinkState(
+                self.robot.getRobotModel(),
+                self.robot.imu.imu_link.getIndex(),
+                computeLinkVelocity=True)[7]
         # observation
         obs = np.concatenate([root_quaternion,
+                              gyroscope,
                               angles,
                               velocities,
                               fsr_values,
