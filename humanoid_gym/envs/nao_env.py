@@ -41,6 +41,21 @@ class NaoEnv(gym.Env):
             self.init_angles.append(self.robot.getAnglesPosition(joint_name))
         self.init_angles = self.joint_angles[0].tolist()
 
+        # default dynamics properties
+        self.joint_dampings = {}  # all zeros
+        for i in range(p.getNumJoints(self.robot.getRobotModel())):
+            joint_info = p.getJointInfo(self.robot.getRobotModel(), i)
+            link_name = joint_info[12].decode("utf-8")
+            self.joint_dampings[link_name] = joint_info[6]
+        self.link_mass = {}
+        self.local_inertia = {}
+        self.mass_center = {}
+        for name, link in self.robot.link_dict.items():
+            dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), link.getIndex())
+            self.link_mass[name] = dynamics_info[0]
+            self.local_inertia[name] = dynamics_info[2]
+            self.mass_center[name] = dynamics_info[3]
+
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.obs_history = deque(maxlen=100)
@@ -141,6 +156,12 @@ class NaoEnv(gym.Env):
         p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=self.ground_friction)
         # change gravity
         p.setGravity(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), -10 + random.uniform(-1, 1))
+        # change mass & local inertia & joint damping
+        for name, link in self.robot.link_dict.items():
+            p.changeDynamics(self.robot.getRobotModel(), link.getIndex(),
+                             mass=self.link_mass[name]*random.uniform(0.75, 1.15),
+                             # localInertiaDiagnoal=np.array(self.local_inertia[name])*random.uniform(0.75, 1.15),
+                             jointDamping=self.joint_dampings[name]*random.uniform(0.75, 1.15))
 
         # stand pose parameters
         pose = NaoPosture('Stand')
