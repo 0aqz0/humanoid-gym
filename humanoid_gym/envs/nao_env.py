@@ -8,6 +8,7 @@ from qibullet import NaoVirtual
 from qibullet.robot_posture import NaoPosture
 import time
 import h5py
+import random
 from scipy.spatial.transform import Rotation as R
 from collections import deque
 
@@ -27,15 +28,6 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=gui, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-
-        # change friction
-        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
-        print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
-        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
-        print('frictions', dynamics_info[1], dynamics_info[6], dynamics_info[7])
-        self.friction = 1.0
-        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.friction)
-        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.friction)
 
         # self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.joint_names = ['LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
@@ -138,6 +130,18 @@ class NaoEnv(gym.Env):
     def reset(self):
         p.resetBasePositionAndOrientation(self.robot.getRobotModel(), [0, 0, 0.33], [0, 0, 0, 1])
         p.resetBaseVelocity(self.robot.getRobotModel(), [0, 0, 0], [0, 0, 0])
+        # dynamics randomization
+        # change friction
+        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex())
+        dynamics_info = p.getDynamicsInfo(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex())
+        self.foot_friction = random.uniform(0.1, 0.5)
+        self.ground_friction = random.uniform(0.5, 3.0)
+        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['l_sole'].getIndex(), lateralFriction=self.foot_friction)
+        p.changeDynamics(self.robot.getRobotModel(), self.robot.link_dict['r_sole'].getIndex(), lateralFriction=self.foot_friction)
+        p.changeDynamics(self.simulation_manager.ground_plane, -1, lateralFriction=self.ground_friction)
+        # change gravity
+        p.setGravity(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5), -10 + random.uniform(-1, 1))
+
         # stand pose parameters
         pose = NaoPosture('Stand')
         for joint_name, init_angle in zip(pose.joint_names, pose.joint_values):
