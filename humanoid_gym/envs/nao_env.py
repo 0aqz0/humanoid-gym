@@ -55,6 +55,8 @@ class NaoEnv(gym.Env):
             self.link_mass[name] = dynamics_info[0]
             self.local_inertia[name] = dynamics_info[2]
             self.mass_center[name] = dynamics_info[3]
+        self.kp = None
+        self.kd = None
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
@@ -67,6 +69,7 @@ class NaoEnv(gym.Env):
     def _get_obs(self):
         # get root transform matrix
         _, root_quaternion = self.robot.getLinkPosition("torso")
+
         # angles
         angles = np.array(self.robot.getAnglesPosition(self.joint_names))
         # velocities
@@ -115,7 +118,7 @@ class NaoEnv(gym.Env):
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
         
-        self.robot.setAngles(self.joint_names, actions, 1.0)
+        self.robot.setAngles(self.joint_names, actions, 1.0, self.kp, self.kd)
         # step twice to 120 Hz
         self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
@@ -162,6 +165,9 @@ class NaoEnv(gym.Env):
                              mass=self.link_mass[name]*random.uniform(0.75, 1.15),
                              # localInertiaDiagnoal=np.array(self.local_inertia[name])*random.uniform(0.75, 1.15),
                              jointDamping=self.joint_dampings[name]*random.uniform(0.75, 1.15))
+        # change Kp & Kd
+        self.kp = random.uniform(60, 120)
+        self.kd = random.uniform(2, 4)
 
         # stand pose parameters
         pose = NaoPosture('Stand')
