@@ -33,12 +33,10 @@ class NaoEnv(gym.Env):
         self.joint_names = ['LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.lower_limits = []
         self.upper_limits = []
-        self.init_angles = []
         for joint_name in self.joint_names:
             joint = self.robot.joint_dict[joint_name]
             self.lower_limits.append(joint.getLowerLimit())
             self.upper_limits.append(joint.getUpperLimit())
-            self.init_angles.append(self.robot.getAnglesPosition(joint_name))
         self.init_angles = self.joint_angles[0].tolist()
 
         # default dynamics properties
@@ -60,6 +58,7 @@ class NaoEnv(gym.Env):
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
+        self.previous_actions = np.zeros(len(self.joint_names))
         self.obs_history = deque(maxlen=100)
         self.obs_length = 3
         self.ang_history = deque(maxlen=100)
@@ -95,13 +94,16 @@ class NaoEnv(gym.Env):
                             self.robot.imu.imu_link.getIndex(),
                             computeLinkVelocity=True)[7])
         # gyroscope += np.random.normal(scale=0.1, size=gyroscope.shape)
+        # previous actions
+        previous_actions = self.previous_actions
         # observation
         obs = np.concatenate([root_quaternion,
                               gyroscope,
                               angles,
                               velocities,
                               fsr_values,
-                              phase])
+                              phase,
+                              previous_actions])
         return obs
 
     def _get_obs_history(self):
@@ -126,6 +128,7 @@ class NaoEnv(gym.Env):
         # step twice to 120 Hz
         self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
+        self.previous_actions = actions
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
