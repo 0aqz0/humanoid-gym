@@ -68,13 +68,16 @@ class NaoEnv(gym.Env):
 
     def _get_obs(self):
         # get root transform matrix
-        _, root_quaternion = self.robot.getLinkPosition("torso")
+        root_quaternion = np.array(self.robot.getLinkPosition("torso")[1])
+        # root_quaternion += np.random.normal(scale=0.1, size=root_quaternion.shape)
 
         # angles
         angles = np.array(self.robot.getAnglesPosition(self.joint_names))
+        # angles += np.random.normal(scale=0.1, size=angles.shape)
         # velocities
         # velocities = np.array(self.robot.getAnglesVelocity(self.joint_names))
         velocities = 120*(angles - self.ang_history[-1]) if len(self.ang_history) > 0 else np.zeros_like(angles)
+        # velocities += np.random.normal(scale=0.1, size=velocities.shape)
         self.ang_history.append(angles)
         # foot contact
         l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
@@ -87,10 +90,11 @@ class NaoEnv(gym.Env):
         # phase
         phase = np.array([self.t/self.total_frames])
         # gyroscope values
-        gyroscope = p.getLinkState(
-                self.robot.getRobotModel(),
-                self.robot.imu.imu_link.getIndex(),
-                computeLinkVelocity=True)[7]
+        gyroscope = np.array(p.getLinkState(
+                            self.robot.getRobotModel(),
+                            self.robot.imu.imu_link.getIndex(),
+                            computeLinkVelocity=True)[7])
+        # gyroscope += np.random.normal(scale=0.1, size=gyroscope.shape)
         # observation
         obs = np.concatenate([root_quaternion,
                               gyroscope,
@@ -166,8 +170,8 @@ class NaoEnv(gym.Env):
                              # localInertiaDiagnoal=np.array(self.local_inertia[name])*random.uniform(0.75, 1.15),
                              jointDamping=self.joint_dampings[name]*random.uniform(0.75, 1.15))
         # change Kp & Kd
-        self.kp = random.uniform(60, 120)
-        self.kd = random.uniform(2, 4)
+        # self.kp = random.uniform(60, 120)
+        # self.kd = random.uniform(2, 4)
 
         # stand pose parameters
         pose = NaoPosture('Stand')
