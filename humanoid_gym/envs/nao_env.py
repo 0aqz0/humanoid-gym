@@ -59,9 +59,13 @@ class NaoEnv(gym.Env):
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
         self.previous_actions = np.zeros(len(self.joint_names))
-        self.obs_history = deque(maxlen=100)
-        self.obs_length = 3
         self.ang_history = deque(maxlen=100)
+        for i in range(100):
+            self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
+        self.obs_history = deque(maxlen=100)
+        for i in range(100):
+            self.obs_history.append(self._get_obs())
+        self.obs_length = 3
         self.observation_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(len(self._get_obs())*self.obs_length,), dtype="float32")
         self._max_episode_steps = 1000
 
@@ -75,7 +79,7 @@ class NaoEnv(gym.Env):
         # angles += np.random.normal(scale=0.1, size=angles.shape)
         # velocities
         # velocities = np.array(self.robot.getAnglesVelocity(self.joint_names))
-        velocities = 120*(angles - self.ang_history[-1]) if len(self.ang_history) > 0 else np.zeros_like(angles)
+        velocities = 120*(angles - self.ang_history[-1])
         # velocities += np.random.normal(scale=0.1, size=velocities.shape)
         self.ang_history.append(angles)
         # foot contact
@@ -85,7 +89,8 @@ class NaoEnv(gym.Env):
         r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
         fsr_values = self.robot.getFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame",
                                               "RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
-        fsr_values = (np.array(fsr_values) == 0)
+        # fsr_values = (np.array(fsr_values) == 0)
+        fsr_values = np.concatenate([l_touch_ground, r_touch_ground])
         # phase
         phase = np.array([self.t/self.total_frames])
         # gyroscope values
@@ -108,10 +113,7 @@ class NaoEnv(gym.Env):
 
     def _get_obs_history(self):
         self.obs_history.append(self._get_obs())
-        if len(self.obs_history) < 10:
-            concat_obs = np.concatenate([self.obs_history[-1]]*self.obs_length, axis=0)
-        else:
-            concat_obs = np.concatenate([self.obs_history[-1], self.obs_history[-5], self.obs_history[-9]], axis=0)
+        concat_obs = np.concatenate([self.obs_history[-1], self.obs_history[-11], self.obs_history[-21]], axis=0)
         return concat_obs
 
     def step(self, actions):
@@ -133,7 +135,7 @@ class NaoEnv(gym.Env):
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
         lin_vel_cost = 4 * 125 * (pos_after[0] - pos_before[0])
-        quad_ctrl_cost = 0.1 * np.square(np.array(actions)).sum()
+        quad_ctrl_cost = 0  # 0.1 * np.square(np.array(actions)).sum()
         quad_impact_cost = 0  # .5e-6 * np.square(data.cfrc_ext).sum()
         quad_impact_cost = min(quad_impact_cost, 10)
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
@@ -189,7 +191,12 @@ class NaoEnv(gym.Env):
         # for _ in range(400):
         #     p.stepSimulation()
         self.t = 0
-        self.obs_history = []
+        self.ang_history = deque(maxlen=100)
+        for i in range(100):
+            self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
+        self.obs_history = deque(maxlen=100)
+        for i in range(100):
+            self.obs_history.append(self._get_obs())
         return self._get_obs_history()
 
     def close(self):
