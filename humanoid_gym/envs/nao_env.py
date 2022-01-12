@@ -53,8 +53,8 @@ class NaoEnv(gym.Env):
             self.link_mass[name] = dynamics_info[0]
             self.local_inertia[name] = dynamics_info[2]
             self.mass_center[name] = dynamics_info[3]
-        self.kp = None
-        self.kd = None
+        self.kps = None
+        self.kds = None
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(len(self.joint_names),), dtype="float32")
@@ -124,7 +124,7 @@ class NaoEnv(gym.Env):
         if isinstance(actions, np.ndarray):
             actions = actions.tolist()
         
-        self.robot.setAngles(self.joint_names, actions, 1.0, self.kp, self.kd)
+        self.robot.setAngles(self.joint_names, actions, 0.3, self.kps, self.kds)
         # step twice to 120 Hz
         self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
@@ -173,8 +173,8 @@ class NaoEnv(gym.Env):
                              # localInertiaDiagnoal=np.array(self.local_inertia[name])*random.uniform(0.75, 1.15),
                              jointDamping=self.joint_dampings[name]*random.uniform(0.75, 1.15))
         # change Kp & Kd
-        # self.kp = random.uniform(60, 120)
-        # self.kd = random.uniform(2, 4)
+        self.kp = [1e-1] * len(self.joint_names)
+        self.kd = [8e-1] * len(self.joint_names)
 
         # stand pose parameters
         pose = NaoPosture('Stand')
@@ -186,8 +186,8 @@ class NaoEnv(gym.Env):
                                     targetPosition=init_angle)
         for joint_name, init_angle in zip(self.joint_names, self.init_angles):
             p.resetJointState(self.robot.getRobotModel(), self.robot.joint_dict[joint_name].getIndex(), init_angle, 0)
-        for _ in range(400):
-            p.stepSimulation()
+        # for _ in range(400):
+        #     p.stepSimulation()
         self.t = 0
         self.obs_history = []
         return self._get_obs_history()
