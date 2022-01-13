@@ -57,7 +57,7 @@ class NaoEnv(gym.Env):
         self.kds = None
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
-        self.action_space = spaces.Box(low=-0.4, high=0.4, shape=(len(self.joint_names),), dtype="float32")
+        self.action_space = spaces.Box(low=-0.3, high=0.3, shape=(len(self.joint_names),), dtype="float32")
         self.previous_actions = np.zeros(len(self.joint_names))
         self.ang_history = deque(maxlen=100)
         for i in range(100):
