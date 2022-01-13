@@ -73,6 +73,10 @@ class NaoEnv(gym.Env):
         # get root transform matrix
         root_quaternion = np.array(self.robot.getLinkPosition("torso")[1])
         # root_quaternion += np.random.normal(scale=0.1, size=root_quaternion.shape)
+        root_velocity = np.array(p.getLinkState(
+                            self.robot.getRobotModel(),
+                            self.robot.imu.imu_link.getIndex(),
+                            computeLinkVelocity=True)[6])
 
         # angles
         angles = np.array(self.robot.getAnglesPosition(self.joint_names))
@@ -103,12 +107,12 @@ class NaoEnv(gym.Env):
         previous_actions = self.previous_actions
         # observation
         obs = np.concatenate([root_quaternion,
+                              root_velocity,
                               gyroscope,
                               angles,
                               velocities,
                               fsr_values,
-                              phase,
-                              previous_actions])
+                              phase])
         return obs
 
     def _get_obs_history(self):
