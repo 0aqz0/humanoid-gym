@@ -58,7 +58,6 @@ class NaoEnv(gym.Env):
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.3, high=0.3, shape=(len(self.joint_names),), dtype="float32")
-        self.previous_actions = np.zeros(len(self.joint_names))
         self.ang_history = deque(maxlen=100)
         for i in range(100):
             self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
@@ -93,8 +92,7 @@ class NaoEnv(gym.Env):
         r_touch_ground = np.array([r_sole_pos[2] < 0.01], dtype=int)
         fsr_values = self.robot.getFsrValues(["LFsrFL_frame", "LFsrFR_frame", "LFsrRL_frame", "LFsrRR_frame",
                                               "RFsrFL_frame", "RFsrFR_frame", "RFsrRL_frame", "RFsrRR_frame"])
-        # fsr_values = (np.array(fsr_values) == 0)
-        fsr_values = np.concatenate([l_touch_ground, r_touch_ground])
+        fsr_values = (np.array(fsr_values) == 0)
         # phase
         phase = np.array([self.t/self.total_frames])
         # gyroscope values
@@ -103,8 +101,6 @@ class NaoEnv(gym.Env):
                             self.robot.imu.imu_link.getIndex(),
                             computeLinkVelocity=True)[7])
         # gyroscope += np.random.normal(scale=0.1, size=gyroscope.shape)
-        # previous actions
-        previous_actions = self.previous_actions
         # observation
         obs = np.concatenate([root_quaternion,
                               root_velocity,
@@ -134,7 +130,6 @@ class NaoEnv(gym.Env):
         # step twice to 120 Hz
         self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
-        self.previous_actions = actions
 
         pos_after = self.robot.getPosition()
         alive_bonus = 5.0
