@@ -71,6 +71,8 @@ class NaoEnv(gym.Env):
     def _get_obs(self):
         # get root transform matrix
         root_quaternion = np.array(self.robot.getLinkPosition("torso")[1])
+        rpy = R.from_quat(root_quaternion).as_euler('xyz')
+        root_quaternion = np.concatenate([rpy, np.cos(rpy), np.sin(rpy)])
         # root_quaternion += np.random.normal(scale=0.1, size=root_quaternion.shape)
         root_velocity = np.array(p.getLinkState(
                             self.robot.getRobotModel(),
