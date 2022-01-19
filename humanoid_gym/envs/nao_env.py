@@ -108,7 +108,7 @@ class NaoEnv(gym.Env):
                               root_velocity,
                               gyroscope,
                               angles,
-                              velocities,
+                              #velocities,
                               fsr_values,
                               phase])
         return obs
