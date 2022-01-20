@@ -28,7 +28,6 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=gui, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
-        p.setTimeStep(1/100.)
 
         # self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.joint_names = ['LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
@@ -62,6 +61,9 @@ class NaoEnv(gym.Env):
         self.ang_history = deque(maxlen=100)
         for i in range(100):
             self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
+        self.pos_history = deque(maxlen=100)
+        for i in range(100):
+            self.pos_history.append(np.array(self.robot.getPosition()))
         self.obs_history = deque(maxlen=100)
         for i in range(100):
             self.obs_history.append(self._get_obs())
@@ -75,17 +77,18 @@ class NaoEnv(gym.Env):
         rpy = R.from_quat(root_quaternion).as_euler('xyz')
         root_quaternion = np.concatenate([rpy, np.cos(rpy), np.sin(rpy)])
         # root_quaternion += np.random.normal(scale=0.1, size=root_quaternion.shape)
-        root_velocity = np.array(p.getLinkState(
-                            self.robot.getRobotModel(),
-                            self.robot.imu.imu_link.getIndex(),
-                            computeLinkVelocity=True)[6])
-
+        # root_velocity = np.array(p.getLinkState(
+        #                     self.robot.getRobotModel(),
+        #                     self.robot.imu.imu_link.getIndex(),
+        #                     computeLinkVelocity=True)[6])
+        root_velocity = 120*(np.array(self.robot.getPosition())-self.pos_history[-1])
+        self.pos_history.append(np.array(self.robot.getPosition()))
         # angles
         angles = np.array(self.robot.getAnglesPosition(self.joint_names))
         # angles += np.random.normal(scale=0.1, size=angles.shape)
         # velocities
         # velocities = np.array(self.robot.getAnglesVelocity(self.joint_names))
-        velocities = 100*(angles - self.ang_history[-1])
+        velocities = 120*(angles - self.ang_history[-1])
         # velocities += np.random.normal(scale=0.1, size=velocities.shape)
         self.ang_history.append(angles)
         # foot contact
@@ -131,7 +134,7 @@ class NaoEnv(gym.Env):
         
         self.robot.setAngles(self.joint_names, actions, 0.3, self.kps, self.kds)
         # step twice to 120 Hz
-        #self.simulation_manager.stepSimulation(self.client)
+        self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
@@ -200,6 +203,9 @@ class NaoEnv(gym.Env):
         self.ang_history = deque(maxlen=100)
         for i in range(100):
             self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
+        self.pos_history = deque(maxlen=100)
+        for i in range(100):
+            self.pos_history.append(np.array(self.robot.getPosition()))
         self.obs_history = deque(maxlen=100)
         for i in range(100):
             self.obs_history.append(self._get_obs())
