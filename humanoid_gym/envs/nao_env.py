@@ -28,6 +28,7 @@ class NaoEnv(gym.Env):
         self.client = self.simulation_manager.launchSimulation(gui=gui, auto_step=False)
         self.simulation_manager.setLightPosition(self.client, [0,0,100])
         self.robot = self.simulation_manager.spawnNao(self.client, spawn_ground_plane=True)
+        p.setTimeStep(1/100.)
 
         # self.joint_names = ['HeadYaw', 'HeadPitch', 'LShoulderPitch', 'LShoulderRoll', 'LElbowYaw', 'LElbowRoll', 'LWristYaw', 'LHand', 'RShoulderPitch', 'RShoulderRoll', 'RElbowYaw', 'RElbowRoll', 'RWristYaw', 'RHand', 'LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
         self.joint_names = ['LHipYawPitch', 'LHipRoll', 'LHipPitch', 'LKneePitch', 'LAnklePitch', 'LAnkleRoll', 'RHipYawPitch', 'RHipRoll', 'RHipPitch', 'RKneePitch', 'RAnklePitch', 'RAnkleRoll']
@@ -84,7 +85,7 @@ class NaoEnv(gym.Env):
         # angles += np.random.normal(scale=0.1, size=angles.shape)
         # velocities
         # velocities = np.array(self.robot.getAnglesVelocity(self.joint_names))
-        velocities = 120*(angles - self.ang_history[-1])
+        velocities = 100*(angles - self.ang_history[-1])
         # velocities += np.random.normal(scale=0.1, size=velocities.shape)
         self.ang_history.append(angles)
         # foot contact
@@ -130,7 +131,7 @@ class NaoEnv(gym.Env):
         
         self.robot.setAngles(self.joint_names, actions, 0.3, self.kps, self.kds)
         # step twice to 120 Hz
-        self.simulation_manager.stepSimulation(self.client)
+        #self.simulation_manager.stepSimulation(self.client)
         self.simulation_manager.stepSimulation(self.client)
 
         pos_after = self.robot.getPosition()
