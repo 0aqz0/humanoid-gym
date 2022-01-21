@@ -58,9 +58,6 @@ class NaoEnv(gym.Env):
 
         # self.action_space = spaces.Box(np.array(self.lower_limits), np.array(self.upper_limits))
         self.action_space = spaces.Box(low=-0.3, high=0.3, shape=(len(self.joint_names),), dtype="float32")
-        self.ang_history = deque(maxlen=100)
-        for i in range(100):
-            self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
         self.pos_history = deque(maxlen=100)
         for i in range(100):
             self.pos_history.append(np.array(self.robot.getPosition()))
@@ -86,11 +83,6 @@ class NaoEnv(gym.Env):
         # angles
         angles = np.array(self.robot.getAnglesPosition(self.joint_names))
         # angles += np.random.normal(scale=0.1, size=angles.shape)
-        # velocities
-        # velocities = np.array(self.robot.getAnglesVelocity(self.joint_names))
-        velocities = 120*(angles - self.ang_history[-1])
-        # velocities += np.random.normal(scale=0.1, size=velocities.shape)
-        self.ang_history.append(angles)
         # foot contact
         l_sole_pos, _ = self.robot.getLinkPosition("l_sole")
         r_sole_pos, _ = self.robot.getLinkPosition("r_sole")
@@ -112,7 +104,6 @@ class NaoEnv(gym.Env):
                               root_velocity,
                               gyroscope,
                               angles,
-                              #velocities,
                               fsr_values,
                               phase])
         return obs
@@ -200,9 +191,6 @@ class NaoEnv(gym.Env):
         for _ in range(400):
             p.stepSimulation()
         self.t = 0
-        self.ang_history = deque(maxlen=100)
-        for i in range(100):
-            self.ang_history.append(self.robot.getAnglesPosition(self.joint_names))
         self.pos_history = deque(maxlen=100)
         for i in range(100):
             self.pos_history.append(np.array(self.robot.getPosition()))
